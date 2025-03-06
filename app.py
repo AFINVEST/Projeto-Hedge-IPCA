@@ -90,7 +90,7 @@ def process_df():
     return df_posicao_juros.rename(columns={'Data de pagamento_str': 'Data de pagamento'})
 
 def process_div01():
-    df_div1 = pd.read_excel(r"Z:\Asset Management\FUNDOS e CLUBES\Gerencial\AF_Trading.xlsm", sheet_name="Base IPCA", skiprows=16)
+    df_div1 = pd.read_excel("AF_Trading.xlsm", sheet_name="Base IPCA", skiprows=16)
     df_div1 = df_div1.iloc[:, :13]
     df_div1 = df_div1.dropna()
     #Manter somente a coluna DAP e DV01
