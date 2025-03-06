@@ -79,7 +79,7 @@ def process_df():
     df_debentures.drop(columns=['Data de pagamento'], inplace=True)
 
     df_posicao_juros = pd.merge(df_debentures, df_quantidade, on='Ativo', how='left')   
-    st.dataframe(df_posicao_juros)
+    #st.dataframe(df_posicao_juros)
 
 
     df_posicao_juros['Juros projetados'] = df_posicao_juros['Juros projetados'] * df_posicao_juros['Quantidade']
