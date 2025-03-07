@@ -16,9 +16,15 @@ st.set_page_config(
 def process_df():
     # Simulação de carga de dados - substituir com seus arquivos reais
     df_posicao = pd.read_excel('Relatório de Posição 2025-02-27.xlsx', sheet_name='Worksheet')
-    df_debentures = pd.read_csv('tabela_debentures.csv')
+    df_debentures = pd.read_csv('tabela_debentures3.csv')
     df_debentures['Juros projetados'] = (
         df_debentures['Juros projetados']
+        .str.replace('.', '')
+        .str.replace(',', '.')
+        .astype(float)
+    )
+    df_debentures['Fluxo descontado (R$)'] = (
+        df_debentures['Fluxo descontado (R$)']
         .str.replace('.', '')
         .str.replace(',', '.')
         .astype(float)
@@ -81,10 +87,9 @@ def process_df():
     df_posicao_juros = pd.merge(df_debentures, df_quantidade, on='Ativo', how='left')   
     #st.dataframe(df_posicao_juros)
 
-
-    df_posicao_juros['Juros projetados'] = df_posicao_juros['Juros projetados'] * df_posicao_juros['Quantidade']
+    df_posicao_juros['Juros projetados'] = df_posicao_juros['Fluxo descontado (R$)'] * df_posicao_juros['Quantidade']
     df_posicao_juros['Amortizações'] = df_posicao_juros['Amortizações'] * df_posicao_juros['Quantidade']
-    df_posicao_juros['Juros projetados'] = df_posicao_juros['Juros projetados'] + df_posicao_juros['Amortizações']
+    df_posicao_juros['Juros projetados'] = df_posicao_juros['Juros projetados']
     df_posicao_juros['DIV1_ATIVO'] = df_posicao_juros['Juros projetados'] * 0.0001 * (df_posicao_juros['Prazos (dias úteis)']/252)
     df_posicao_juros['DAP'] = df_posicao_juros['Ano'].map(dap_dict)
     return df_posicao_juros.rename(columns={'Data de pagamento_str': 'Data de pagamento'})
