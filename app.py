@@ -15,8 +15,8 @@ st.set_page_config(
 
 def process_df():
     # Simulação de carga de dados - substituir com seus arquivos reais
-    df_posicao = pd.read_excel('Relatório de Posição 2025-03-27.xlsx', sheet_name='Worksheet')
-    df_debentures = pd.read_csv('deb_table_completa4.csv')
+    df_posicao = pd.read_excel('Relatório de Posição 2025-04-03.xlsx', sheet_name='Worksheet')
+    df_debentures = pd.read_csv('deb_table_completa.csv')
     df_debentures['Juros projetados'] = (
         df_debentures['Juros projetados']
         .str.replace('-', '0')
