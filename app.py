@@ -15,7 +15,7 @@ st.set_page_config(
 
 def process_df():
     # Simulação de carga de dados - substituir com seus arquivos reais
-    df_posicao = pd.read_excel('Relatório de Posição 2025-04-03.xlsx', sheet_name='Worksheet')
+    df_posicao = pd.read_excel('Relatório de Posição 2025-04-11.xlsx', sheet_name='Worksheet')
     df_debentures = pd.read_csv('deb_table_completa.csv')
     df_debentures['Juros projetados'] = (
         df_debentures['Juros projetados']
@@ -96,6 +96,7 @@ def process_df():
     df_posicao_juros['Juros projetados'] = df_posicao_juros['Juros projetados']
     df_posicao_juros['DIV1_ATIVO'] = df_posicao_juros['Juros projetados'] * 0.0001 * (df_posicao_juros['Prazos (dias úteis)']/252)
     df_posicao_juros['DAP'] = df_posicao_juros['Ano'].map(dap_dict)
+    
     return df_posicao_juros.rename(columns={'Data de pagamento_str': 'Data de pagamento'})
 
 def process_div01():
