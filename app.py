@@ -1,5 +1,6 @@
 # (Mantendo as importações originais)
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -417,7 +418,9 @@ def main():
     # CSS personalizado
     add_custom_css()
 
+
 def add_custom_css():
+    # CSS personalizado
     st.markdown(
         """
         <style>
@@ -476,6 +479,10 @@ def add_custom_css():
         }
 
         /* Estiliza o ícone dentro do botão de decremento */
+        button[data-testid="stNumberInput-StepUp"] svg {
+            color: black !important;
+            fill: black !important;
+        }
         button[data-testid="stNumberInput-StepDown"] svg {
             fill: black !important; /* Garante que o ícone seja preto */
         }
@@ -491,6 +498,17 @@ def add_custom_css():
         """,
         unsafe_allow_html=True,
     )
+
+    # JavaScript para aplicar zoom de 80%
+    components.html(
+        """
+        <script>
+            document.body.style.zoom = "80%";
+        </script>
+        """,
+        height=0,
+    )
+
 
 if __name__ == "__main__":
     main()
