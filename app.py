@@ -173,6 +173,58 @@ def main():
         if selected_ativos:
             df_filtered = df_filtered[df_filtered["Ativo"].isin(selected_ativos)]
     
+    # ------------------------------------------------------------------
+    # NOVA SEÇÃO: TESTAR NOVAS QUANTIDADES (MÚLTIPLOS ATIVOS)
+    # ------------------------------------------------------------------
+    st.sidebar.write("---")
+    st.sidebar.subheader("Testar novas quantidades")
+    testar_nova_qtd = st.sidebar.checkbox("Deseja simular nova quantidade de vários ativos?")
+    if testar_nova_qtd:
+        # Múltipla seleção de ativos disponíveis
+        #Criar checkbox para usar os selected_ativos ou os ativos_disponiveis
+        repetir_ativos = st.sidebar.checkbox("Repetir ativos filtrados", value=False)
+        if repetir_ativos:
+            ativos_para_teste = st.sidebar.multiselect("Selecione ativos para teste:", ativos_disponiveis, default=selected_ativos)
+        else:
+            ativos_para_teste = st.sidebar.multiselect("Selecione ativos para teste:", ativos_disponiveis)
+
+        # Form para alterar quantidades
+        novas_quantidades = {}
+        with st.sidebar.form(key="form_alterar_qtd"):
+            for ativo in ativos_para_teste:
+                # Pega a quantidade atual
+                qtd_atual_array = df_filtered.loc[df_filtered['Ativo'] == ativo, 'Quantidade'].unique()
+                qtd_atual_val = qtd_atual_array[0] if len(qtd_atual_array) else 0
+                
+                # Input numérico para cada ativo selecionado
+                nova_qtd = st.number_input(
+                    f"Nova qtd - {ativo} (atual: {qtd_atual_val:.0f})",
+                    min_value=0,
+                    value=int(qtd_atual_val)
+                )
+                novas_quantidades[ativo] = nova_qtd
+            
+            # Botão de aplicar
+            aplicar = st.form_submit_button("Aplicar quantidades")
+        
+        if aplicar:
+            # Aplica as novas quantidades a cada ativo
+            for atv, qtd in novas_quantidades.items():
+                df_filtered.loc[df_filtered['Ativo'] == atv, 'Quantidade'] = qtd
+
+            # Recalcula colunas dependentes (ex.: Juros projetados, DIV1_ATIVO)
+            df_filtered['Juros projetados'] = (
+                df_filtered['Fluxo descontado (R$)'] * df_filtered['Quantidade']
+            )
+            df_filtered['DIV1_ATIVO'] = (
+                df_filtered['Juros projetados'] * 0.0001 *
+                (df_filtered['Prazos (dias úteis)']/252)
+            )
+
+            st.success("Novas quantidades aplicadas aos ativos selecionados!")
+
+
+    
     # --- MUDANÇA AQUI: GRÁFICO COM GGPlot (plotnine) ---
     st.write("## Relação Juros Projetados vs Ano/Semestre")
     if selected_filters:
@@ -181,6 +233,11 @@ def main():
         element_rect, scale_fill_brewer,scale_y_continuous,scale_fill_manual,geom_text,position_dodge
          )
         # Agregar por Ano e Semestre a soma de "Juros projetados" e dividir por 1000
+        #Colocar uma checkbox para exivir o df_fitlered
+        exibir = st.sidebar.checkbox("Mostrar DataFrame filtrado", value=False, key="show_df")
+        if exibir:
+            st.write("## Base Para os Calculos da Página:")
+            st.dataframe(df_filtered)
         df_plot = (
             df_filtered
             .groupby(["Ano", "Semestre"], as_index=False)
