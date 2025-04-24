@@ -204,6 +204,11 @@ def main():
 
             # Filtra os dados dos ativos escolhidos e concatena ao df_filtered
             novos_dados = df[df['Ativo'].isin(ativos_possiveis_escolhidos)]
+            #Deixar somente os ativos do primeiro fundo que o usuario selecionar
+            if novos_dados['Fundo'].nunique() > 1:
+                fundo_selecionado = st.sidebar.selectbox("Selecione o fundo:", novos_dados['Fundo'].unique(), index=0)
+                novos_dados = novos_dados[novos_dados['Fundo'] == fundo_selecionado]
+            # Concatenar os novos dados ao DataFrame filtrado
             df_filtered = pd.concat([df_filtered, novos_dados], ignore_index=True)
 
         if repetir_ativos:
@@ -256,11 +261,6 @@ def main():
         element_rect, scale_fill_brewer,scale_y_continuous,scale_fill_manual,geom_text,position_dodge
          )
         # Agregar por Ano e Semestre a soma de "Juros projetados" e dividir por 1000
-        #Colocar uma checkbox para exivir o df_fitlered
-        exibir = st.sidebar.checkbox("Mostrar DataFrame filtrado", value=False, key="show_df")
-        if exibir:
-            st.write("## Base Para os Calculos da Página:")
-            st.dataframe(df_filtered)
         df_plot = (
             df_filtered
             .groupby(["Ano", "Semestre"], as_index=False)
@@ -463,7 +463,6 @@ def main():
                 st.button(f"Salvar posição de “{fundo}”", on_click=salvar_posicao)
 
 
-
             # 3) Mensagens pós-salvar
             if "msg" in st.session_state:
                 tipo, texto = st.session_state["msg"]
@@ -494,8 +493,12 @@ def main():
             if st.button("Limpar posições"):
                 st.session_state.df_total = pd.DataFrame()
                 st.success("Posições zeradas.")
+                #Colocar uma checkbox para exivir o df_fitlered
 
-
+        exibir = st.sidebar.checkbox("Mostrar DataFrame filtrado", value=False, key="show_df")
+        if exibir:
+            st.write("## Base Para os Calculos da Página:")
+            st.dataframe(df_filtered)
 
 
     # Tabela de dados
