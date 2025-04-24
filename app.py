@@ -201,15 +201,15 @@ def main():
             ativos_disponiveis += ativos_possiveis_escolhidos
             ativos_disponiveis = list(set(ativos_disponiveis))
             ativos_disponiveis.sort()
-
-            # Filtra os dados dos ativos escolhidos e concatena ao df_filtered
-            novos_dados = df[df['Ativo'].isin(ativos_possiveis_escolhidos)]
-            #Deixar somente os ativos do primeiro fundo que o usuario selecionar
-            if novos_dados['Fundo'].nunique() > 1:
-                fundo_selecionado = st.sidebar.selectbox("Selecione o fundo:", novos_dados['Fundo'].unique(), index=0)
-                novos_dados = novos_dados[novos_dados['Fundo'] == fundo_selecionado]
-            # Concatenar os novos dados ao DataFrame filtrado
-            df_filtered = pd.concat([df_filtered, novos_dados], ignore_index=True)
+            for ativo in ativos_possiveis_escolhidos:
+                # Filtra os dados dos ativos escolhidos e concatena ao df_filtered
+                novos_dados = df[df['Ativo'].isin(ativos_possiveis_escolhidos)]
+                #Deixar somente os ativos do primeiro fundo que o usuario selecionar
+                if novos_dados['Fundo'].nunique() > 1:
+                    fundo_selecionado = st.sidebar.selectbox(f"Selecione o fundo do ativo {ativo}:", novos_dados['Fundo'].unique(), index=0)
+                    novos_dados = novos_dados[novos_dados['Fundo'] == fundo_selecionado]
+                # Concatenar os novos dados ao DataFrame filtrado
+                df_filtered = pd.concat([df_filtered, novos_dados], ignore_index=True)
 
         if repetir_ativos:
             ativos_para_teste = st.sidebar.multiselect("Selecione ativos para teste:", ativos_disponiveis, default=selected_ativos)
