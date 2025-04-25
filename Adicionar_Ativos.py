@@ -16,9 +16,9 @@ from selenium.webdriver.support   import expected_conditions as EC
 # 1. CONFIGURAÇÕES BÁSICAS                                                   |
 # ---------------------------------------------------------------------------
 
-
 LOGIN_AFINVEST   = ("emanuel.cabral@afinvest.com.br", "Afs@2024")
 LOGIN_XP         = ("bruno.veloso@afinvest.com.br", "Afs@2023")
+
 
 #: Ativos a adicionar  –  **edite aqui** ====================================
 ADD_ASSETS: list[dict] = [
@@ -233,3 +233,4 @@ def main():
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     main()
+    

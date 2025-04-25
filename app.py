@@ -6,7 +6,6 @@ import numpy as np
 import plotly.graph_objects as go
 import io
 
-
 # NOVA importação para usar ggplot em Python
 from plotnine import ggplot, aes, geom_col, labs, theme, theme_bw, element_text
 
