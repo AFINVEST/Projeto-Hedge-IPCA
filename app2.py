@@ -408,6 +408,18 @@ def add_custom_css():
         div[class="st-al st-bt st-bp st-bu st-bv st-bw st-bx st-by st-bz st-ak st-c0 st-c1 st-c2 st-bn st-c3 st-c4 st-c5 st-c6 st-c7 st-c8 st-c9"] input {
             color: black !important;  /* Altera a cor do texto */
         }
+        div[data-baseweb="select"] div[class*="st-cy"] {
+        color: black !important;
+        }
+        /* Altera o texto dentro da opção selecionada do primeiro dropdown */
+        div[data-baseweb="select"] div[class*="st-cy"] {
+            color: black !important;
+        }
+
+        /* Altera o texto do input do segundo dropdown */
+        div[data-baseweb="select"] input[role="combobox"] {
+            color: black !important;
+        }
             /* Altera a cor de texto dos itens de opção (como "ACRC21") */
         div[data-baseweb="select"] div[role="option"] {
             color: black !important;
