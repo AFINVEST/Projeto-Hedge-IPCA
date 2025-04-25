@@ -41,7 +41,7 @@ st.set_page_config(
 
 def process_df() -> pd.DataFrame:
     """Carrega posição + debêntures, devolvendo df_posicao_juros já agregado."""
-    df_posicao = pd.read_excel("Relatório de Posição 2025-04-22.xlsx", sheet_name="Worksheet")
+    df_posicao = pd.read_excel("Relatório de Posição 2025-04-24.xlsx", sheet_name="Worksheet")
     df_debentures = pd.read_csv("deb_table_completa2.csv")
 
     for col in ["Juros projetados", "Fluxo descontado (R$)", "Amortizações"]:
