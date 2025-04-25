@@ -41,8 +41,8 @@ st.set_page_config(
 
 def process_df() -> pd.DataFrame:
     """Carrega posição + debêntures, devolvendo df_posicao_juros já agregado."""
-    df_posicao = pd.read_excel("Relatório de Posição 2025-04-24.xlsx", sheet_name="Worksheet")
-    df_debentures = pd.read_csv("deb_table_completa2.csv")
+    df_posicao = pd.read_excel("Dados/Relatório de Posição 2025-04-24.xlsx", sheet_name="Worksheet")
+    df_debentures = pd.read_csv("Dados/deb_table_completa2.csv")
 
     for col in ["Juros projetados", "Fluxo descontado (R$)", "Amortizações"]:
         df_debentures[col] = (
@@ -91,7 +91,7 @@ def process_df() -> pd.DataFrame:
 
 
 def process_div01() -> pd.DataFrame:
-    df_div1 = pd.read_excel("AF_Trading.xlsm", sheet_name="Base IPCA", skiprows=16)
+    df_div1 = pd.read_excel("Dados/AF_Trading.xlsm", sheet_name="Base IPCA", skiprows=16)
     df_div1 = df_div1.iloc[:, :13].dropna()[["DAP", "DV01"]]
     df_div1["DAP"] = df_div1["DAP"].apply(lambda x: x[:3] + x[-2:] if isinstance(x, str) and len(x) >= 5 else x)
     return df_div1
@@ -167,7 +167,7 @@ def plot_div1_layout(df, df_div1):
     df_sum = df_sum.merge(df_div1, on="DAP", how="left").rename(columns={"DV01": "DV01_DAP"})
     df_sum["CONTRATOS"] = df_sum["DIV1_ATIVO"] / df_sum["DV01_DAP"]
     df_fmt = df_sum.copy()
-    df_fmt["DIV1_ATIVO"] = df_fmt["DIV1_ATIVO"].apply(lambda x: f"{x:,.0f}")
+    #df_fmt["DIV1_ATIVO"] = df_fmt["DIV1_ATIVO"].apply(lambda x: f"{x:.0f}")
 
     col1, col2, col3 = st.columns([4.9, 0.2, 4.9])
     with col1:
@@ -183,7 +183,31 @@ def plot_div1_layout(df, df_div1):
     with col2:
         st.html("<div style='border-left:2px solid rgba(49,51,63,0.2);height:60vh;margin:auto'></div>")
     with col3:
-        st.table(df_fmt.set_index("DAP"))
+        df_fmt.set_index("DAP", inplace=True)
+        #Criar coluna e linha de totais
+        df_fmt.loc["Total"] = df_fmt.sum(numeric_only=True)
+        #Arredondar valores mas manter o formato de int
+        df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].apply(lambda x: f"{x:,.0f}")
+        df_fmt["DV01_DAP"] = df_fmt["DV01_DAP"].apply(lambda x: f"{x:,.0f}")
+        df_fmt["DIV1_ATIVO"] = df_fmt["DIV1_ATIVO"].apply(lambda x: f"{x:.0f}")
+        df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].apply(lambda x: int(x))
+        df_fmt["DV01_DAP"] = df_fmt["DV01_DAP"].apply(lambda x: int(x))
+        df_fmt["DIV1_ATIVO"] = df_fmt["DIV1_ATIVO"].apply(lambda x: int(x))
+        #Criar coluna de totais
+        df_fmt['Total'] = df_fmt.sum(axis=1)
+        #Colocar as casas de milhar em negrito
+        df_fmt = df_fmt.style.format("{:,.0f}")
+        #Aplicar negrito e centralizar os cabeçalhos
+        df_fmt = df_fmt.set_table_styles([
+            {"selector": "th", "props": [("font-weight", "bold"), ("text-align", "center")]},
+            {"selector": "td", "props": [("text-align", "right")]}
+        ])
+
+        df_fmt = df_fmt.set_properties(**{"text-align": "right"})
+        df_fmt = df_fmt.set_caption("Tabela de DAPs e Contratos").set_table_styles(
+            [{"selector": "caption", "props": [("font-size", "16px"), ("font-weight", "bold")]}]
+        )
+        st.table(df_fmt)
     return df_sum[["DAP", "CONTRATOS"]].set_index("DAP")
 
 ###############################################################################
@@ -213,7 +237,17 @@ def atualizar_session_state_contratos(fundo: str, df_contr: pd.DataFrame):
     # Exclusão de coluna específica
     if not st.session_state.df_total.empty:
         st.subheader("Posições acumuladas")
-        st.table(st.session_state.df_total.style.format("{:,.0f}"))
+        df_plot = st.session_state.df_total.copy()
+        df_plot = df_plot.replace([float("inf"), float("-inf")], 0).fillna(0)
+        # Transformar todas as colunas em INT (arredondando antes)
+        df_plot = df_plot.round().astype(int)
+
+        # Criar colunas de compra e venda
+        df_plot["Compra"] = df_plot[df_plot > 0].sum(axis=1)
+        df_plot["Venda"] = df_plot[df_plot < 0].sum(axis=1)
+
+        # Aplicar formatação para exibição
+        st.table(df_plot.style.format("{:.0f}"))
         col_to_del = st.selectbox("Coluna para apagar", st.session_state.df_total.columns, key="col_del")
         if st.button("Apagar coluna", key="btn_del_col"):
             st.session_state.df_total.drop(columns=[col_to_del], inplace=True)
@@ -224,7 +258,7 @@ def atualizar_session_state_contratos(fundo: str, df_contr: pd.DataFrame):
             with pd.ExcelWriter(buf, engine="openpyxl") as writer:
                 df.to_excel(writer, sheet_name="Posições")
             return buf.getvalue()
-        st.download_button("Baixar Excel", data=to_excel_bytes(st.session_state.df_total),
+        st.download_button("Baixar Excel", data=to_excel_bytes(df_plot),
                            file_name="posicoes_por_fundo.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 ###############################################################################
@@ -420,7 +454,16 @@ def add_custom_css():
         div[data-baseweb="select"] input[role="combobox"] {
             color: black !important;
         }
-            /* Altera a cor de texto dos itens de opção (como "ACRC21") */
+        div[role="listbox"] div {
+        color: black !important;
+        }
+        div[class*="st-cc"] {
+            color: black !important;
+        }
+        div.st-cc.st-bn.st-ar.st-cd.st-ce.st-cf {
+            color: black !important;
+        }
+        /* Altera a cor de texto dos itens de opção (como "ACRC21") */
         div[data-baseweb="select"] div[role="option"] {
             color: black !important;
         }
@@ -510,7 +553,7 @@ def add_custom_css():
         div[class="st-al st-bt st-bp st-bu st-bv st-bw st-bx st-by st-bz st-ak st-c0 st-c1 st-c2 st-bn st-c3 st-c4 st-c5 st-c6 st-c7 st-c8 st-c9"] input {
             color: black !important;  /* Altera a cor do texto */
         }
-            /* Altera a cor de texto dos itens de opção (como "ACRC21") */
+        /* Altera a cor de texto dos itens de opção (como "ACRC21") */
         div[data-baseweb="select"] div[role="option"] {
             color: black !important;
         }
@@ -523,7 +566,7 @@ def add_custom_css():
     components.html(
         """
         <script>
-            document.body.style.zoom = "80%";
+            document.body.style.zoom = "60%";
         </script>
         """,
         height=0,
