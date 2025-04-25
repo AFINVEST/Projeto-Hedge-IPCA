@@ -268,6 +268,30 @@ def analisar_ativo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
     if st.sidebar.checkbox("Mostrar base do ativo"):
         st.dataframe(df_asset)
+        #Colocar checkbox para exportar base filtrada, mas trocando os pontos por vírgulas
+        if st.checkbox("Exportar base filtrada", key="chk_export"):
+            df_asset_export = df_asset.copy()
+            for col in ["Juros projetados", "Fluxo descontado (R$)", "Amortizações", "DIV1_ATIVO"]:
+                df_asset_export[col] = df_asset_export[col].astype(float).apply(lambda x: f"{x:,.2f}".replace(",","").replace(".", ","))
+            
+            # Cria buffer de memória
+            output = io.BytesIO()
+
+            # Salva o DataFrame no buffer como Excel usando openpyxl
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df_asset_export.to_excel(writer, index=False, sheet_name='Base')
+
+            # Move o ponteiro para o início do arquivo
+            output.seek(0)
+
+            # Botão de download
+            st.download_button(
+                label="Baixar base filtrada",
+                data=output,
+                file_name=f"{ativo_sel}_base_filtrada.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+    
 
 
 def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
@@ -381,6 +405,13 @@ def add_custom_css():
     st.markdown(
         """
         <style>
+        div[class="st-al st-bt st-bp st-bu st-bv st-bw st-bx st-by st-bz st-ak st-c0 st-c1 st-c2 st-bn st-c3 st-c4 st-c5 st-c6 st-c7 st-c8 st-c9"] input {
+            color: black !important;  /* Altera a cor do texto */
+        }
+            /* Altera a cor de texto dos itens de opção (como "ACRC21") */
+        div[data-baseweb="select"] div[role="option"] {
+            color: black !important;
+        }
 
          /* Alterar a cor de todo o texto na barra lateral */
         section[data-testid="stSidebar"] * {
@@ -463,6 +494,13 @@ def add_custom_css():
         
         div[data-testid="stDateInput"] input {
             color: black;
+        }
+        div[class="st-al st-bt st-bp st-bu st-bv st-bw st-bx st-by st-bz st-ak st-c0 st-c1 st-c2 st-bn st-c3 st-c4 st-c5 st-c6 st-c7 st-c8 st-c9"] input {
+            color: black !important;  /* Altera a cor do texto */
+        }
+            /* Altera a cor de texto dos itens de opção (como "ACRC21") */
+        div[data-baseweb="select"] div[role="option"] {
+            color: black !important;
         }
         </style>
         """,
