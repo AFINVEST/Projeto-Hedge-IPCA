@@ -37,7 +37,7 @@ st.set_page_config(
 
 ###############################################################################
 # FUNÇÕES DE CARGA / PROCESSAMENTO (bases inalteradas)
-###############################################################################
+################################################################################
 
 def process_df() -> pd.DataFrame:
     """Carrega posição + debêntures, devolvendo df_posicao_juros já agregado."""
