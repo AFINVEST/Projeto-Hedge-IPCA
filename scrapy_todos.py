@@ -15,26 +15,24 @@ ativos = ['ACRC21', 'AEAB11', 'AEGP23', 'AESL17', 'AESLA5', 'AESLA7', 'AESLB7', 
           'ERDV38', 'ERDVA4', 'ERDVB4', 'ERDVC3', 'ERDVC4', 'ESAM14', 'ESULA1', 'ESULA6', 'ETAP22', 'ETBA12', 'ETEN11', 'ETEN12', 'ETEN21', 'ETEN22', 'ETEN31', 'ETSP12', 'EUBE11', 'EXTZ11', 'FBRI13', 'FGEN13', 'FLCLA0', 'FRAG14', 'FURN21', 'GASC15', 'GASC16', 'GASC17', 'GASC22', 'GASC23', 'GASC25', 'GASC26', 'GASC27', 'GASP19', 'GASP29', 'GASP34', 'GBSP11', 'GEPA28', 'GRRB24', 'GSTS14', 'GSTS24', 'HARG11', 'HBSA11', 'HBSA21', 'HGLB23', 'HVSP11', 'HZTC14', 'IBPB11', 'IGSN15', 'IRJS14', 'IRJS15', 'ITPO14', 'IVIAA0', 'JALL11', 'JALL13', 'JALL14', 'JALL15', 'JALL21', 'JALL24', 'JSMLB5', 'JTEE11', 'JTEE12', 'KLBNA5', 'LCAMD1', 'LCAMD3', 'LGEN11', 'LIGH2B', 'LIGHA5', 'LORTA7', 'LTTE15', 'MEZ511', 'MGSP12', 'MNAU13', 'MOVI18', 'MOVI37', 'MRSAA1', 'MRSAA2', 'MRSAB1', 'MRSAB2', 'MRSAC1', 'MRSAC2', 'MSGT12', 'MSGT13', 'MSGT23', 'MSGT33', 'MTRJ19', 'MVLV16', 'NEOE16', 'NEOE26', 'NMCH11', 'NRTB11', 'NRTB21', 'NTEN11', 'ODTR11', 'ODYA11', 'OMGE12', 'OMGE22', 'OMGE31', 'OMGE41', 'OMNG12', 'ORIG11', 'PALF38', 'PALFA3', 'PALFB3', 'PASN12', 'PEJA11', 'PEJA22', 'PEJA23', 'PETR16', 'PETR17', 'PETR26', 'PETR27', 'PLSB1A', 'POTE11', 'POTE12', 'PPTE11', 'PRAS11', 'PRPO12', 'PRTE12', 'PTAZ11', 'QUAT13', 'RAHD11', 'RAIZ13', 'RAIZ23', 'RATL11', 'RDOE18', 'RDVE11', 'RECV11', 'RESA14', 'RESA15', 'RESA17', 'RESA27', 'RIGEA3', 'RIPR22', 'RIS412', 'RIS414', 'RIS422', 'RIS424', 'RISP12', 'RISP14', 'RISP22', 'RISP24', 'RMSA12', 'RRRP13', 'RSAN16', 'RSAN26', 'RSAN34', 'RSAN44', 'RUMOA2', 'RUMOA3', 'RUMOA4', 'RUMOA5', 'RUMOA6', 'RUMOA7', 'RUMOB1', 'RUMOB3', 'RUMOB5', 'RUMOB6', 'RUMOB7', 'SABP12', 'SAELA1', 'SAELA3', 'SAELB3', 'SAPR10', 'SAPRA2', 'SAPRA3', 'SAPRB3', 'SAVI13', 'SBSPB6', 'SBSPC4', 'SBSPC6', 'SBSPD4', 'SBSPE3', 'SBSPE9', 'SBSPF3', 'SBSPF9', 'SERI11', 'SMTO14', 'SMTO24', 'SNRA13', 'SPRZ11', 'SRTI11', 'STBP35', 'STBP45', 'STRZ11', 'SUMI17', 'SUMI18', 'SUZB19', 'SUZB29', 'SUZBA0', 'TAEB15', 'TAEE17', 'TAEE18', 'TAEE26', 'TAEEA2', 'TAEEA4', 'TAEEA7', 'TAEEB2', 'TAEEB4', 'TAEEC2', 'TAEEC4', 'TAEED2', 'TAES15', 'TBEG11', 'TBLE26', 'TCII11', 'TEPA12', 'TIET18', 'TIET29', 'TIET39', 'TIMS12', 'TNHL11', 'TOME12', 'TPEN11', 'TPNO12', 'TPNO13', 'TRCC11', 'TRGO11', 'TRPLA4', 'TRPLA7', 'TRPLB4', 'TRPLB7', 'TSSG21', 'TVVH11', 'UHSM12', 'UNEG11', 'UNTE11', 'USAS11', 'UTPS11', 'UTPS12', 'UTPS21', 'UTPS22', 'VALE38', 'VALE48', 'VALEA0', 'VALEB0', 'VALEC0', 'VAMO33', 'VAMO34', 'VBRR11', 'VDBF12', 'VDEN12', 'VERO12', 'VERO13', 'VERO24', 'VERO44', 'VLIM13', 'VLIM14', 'VLIM15', 'VLIM16', 'VPLT12', 'VRDN12', 'WDPR11', 'XNGU17']
 
 Cra = ["CRA Ferroeste 2ª Série", "CRI Bem Brasil"]
-#df_posicao = pd.read_excel(
+# df_posicao = pd.read_excel(
 #    'Dados/Relatório de Posição 2025-04-24.xlsx', sheet_name='Worksheet')
-#df_posicao = df_posicao[df_posicao['Ativo'].isin(ativos)]
-#ativos = df_posicao['Ativo'].unique()
-#ativos = ativos.tolist()
-#print(f'Ativos de posição : {ativos}')
+# df_posicao = df_posicao[df_posicao['Ativo'].isin(ativos)]
+# ativos = df_posicao['Ativo'].unique()
+# ativos = ativos.tolist()
+# print(f'Ativos de posição : {ativos}')
 
 # usa caixa-alta para evitar erros se houver letras minúsculas no Excel
-#ativos_em_posicao = set(df_posicao["Ativo"].str.upper())
+# ativos_em_posicao = set(df_posicao["Ativo"].str.upper())
 # --------------------------------------------------------------------------- #
 # 2. FILTRA APENAS OS QUE NÃO ESTÃO EM df_posicao                             #
 # --------------------------------------------------------------------------- #
-#ativos_para_scrape = [
+# ativos_para_scrape = [
 #    a for a in ativos if a.upper() not in ativos_em_posicao
-#]
+# ]
 
-#ativos = ativos_para_scrape
-#print(f'Ativos para scrape: {ativos}')
-ativos = ['AESL17', 'AESOA1', 'AESLA5']
-
+# ativos = ativos_para_scrape
+# print(f'Ativos para scrape: {ativos}')
 # ANALISAR SE O AESO1 ESTÁ INDO
 
 
@@ -44,7 +42,7 @@ deu_ruim = ["BRFS31", 'NTN-B50', 'CRTA12', 'CPLD15',
             'CTGE11', 'LSVE39', 'SUMI37', 'SUZBC1']
 
 # Configurar o serviço do ChromeDriver
-# ativos =['PEJA11', 'ASAB11']
+# ativos = ['PEJA11', 'ASAB11']
 
 # options.add_argument("--headless")  # Opcional: Executar sem abrir a janela
 service = Service()
@@ -73,7 +71,7 @@ try:
 
         try:
             # Verifica se o elemento está presente
-            time.sleep(2)
+            time.sleep(3)
             elemento = driver.find_element(
                 By.XPATH, "//p[contains(text(), 'Taxa ANBIMA do ativo')]")
 
@@ -88,7 +86,7 @@ try:
             # Clicar no botão
             button.click()
             # Aguarde para garantir que a tabela carregue após o clique
-            time.sleep(4)
+            time.sleep(7)
             # Aguardar a tabela carregar
             table_element = wait.until(EC.presence_of_element_located(
                 (By.CSS_SELECTOR, "#card-fluxo-pagamento > article > article > section > div > div > table")))
@@ -168,7 +166,7 @@ try:
                 # Clicar no botão
                 button.click()
                 # Aguarde para garantir que a tabela carregue após o clique
-                time.sleep(5)
+                time.sleep(7)
 
                 # Aguardar a tabela carregar
                 table_element = wait.until(EC.presence_of_element_located(
@@ -205,7 +203,6 @@ try:
     columns = ["Dados do evento", "Data de pagamento",
                "Prazos (dias úteis)", "Dias entre pagamentos", "Expectativa de juros (%)", "Juros projetados", "Amortizações", "Fluxo descontado (R$)", "Ativo"]
     df.columns = columns
-
 
     # Salvar o DataFrame em um arquivo CSV
     df.to_csv("Dados/deb_table_completa3.csv", index=False)
