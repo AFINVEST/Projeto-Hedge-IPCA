@@ -37,7 +37,7 @@ st.set_page_config(
 
 ###############################################################################
 # FUNÇÕES DE CARGA / PROCESSAMENTO (bases inalteradas)
-###############################################################################
+################################################################################
 
 
 def process_df() -> pd.DataFrame:
@@ -99,57 +99,6 @@ def process_df() -> pd.DataFrame:
         (df_merged["Prazos (dias úteis)"] / 252)
     )
     df_merged["DAP"] = df_merged["Ano"].map(dap_dict)
-
-    df_debentures2 = pd.read_csv("Dados/deb_table_completa3.csv")
-
-    # mesmas limpezas numéricas
-    for col in ["Juros projetados", "Fluxo descontado (R$)", "Amortizações"]:
-        df_debentures2[col] = (
-            df_debentures2[col]
-            .str.replace("-", "0")
-            .str.replace(".", "", regex=False)
-            .str.replace(",", ".")
-            .astype(float)
-        )
-
-    # mesmos nomes de coluna e colunas de data
-    df_debentures2.columns = [
-        "Dados do evento", "Data de pagamento", "Prazos (dias úteis)",
-        "Dias entre pagamentos", "Expectativa de juros (%)", "Juros projetados",
-        "Amortizações", "Fluxo descontado (R$)", "Ativo",
-    ]
-    df_debentures2["Data de pagamento"] = pd.to_datetime(
-        df_debentures2["Data de pagamento"])
-    df_debentures2["Data"] = df_debentures2["Data de pagamento"].dt.strftime(
-        "%Y-%m")
-    df_debentures2["Ano"] = df_debentures2["Data de pagamento"].dt.year
-    df_debentures2["Semestre"] = df_debentures2["Data de pagamento"].dt.quarter.replace(
-        {1: "1º Semestre", 2: "1º Semestre", 3: "2º Semestre", 4: "2º Semestre"}
-    )
-    df_debentures2 = df_debentures2[
-        ~df_debentures2["Ativo"].isin(df_debentures["Ativo"].unique())
-    ].copy()
-
-    # armazena só para uso posterior (NÃO entra na visão principal)
-    df_debentures2["Quantidade"] = 100
-    df_debentures2["Fundo"] = "SEM FUNDO"
-    # ─────────── recalcula métricas para os ativos extras ────────────
-    df_debentures2["Juros projetados"] = (
-        df_debentures2["Fluxo descontado (R$)"] * df_debentures2["Quantidade"]
-    )
-
-    df_debentures2["Amortizações"] = (
-        df_debentures2["Amortizações"] * df_debentures2["Quantidade"]
-    )
-
-    df_debentures2["DIV1_ATIVO"] = (
-        df_debentures2["Juros projetados"] * 0.0001 *
-        (df_debentures2["Prazos (dias úteis)"] / 252)
-    )
-
-    df_debentures2["DAP"] = df_debentures2["Ano"].map(dap_dict)
-    # ───────────────────────────────────────────────────────────
-    st.session_state["df_extras"] = df_debentures2.copy()
 
     return df_merged.rename(columns={"Data": "Data de pagamento"})
 
@@ -266,16 +215,18 @@ def plot_div1_layout(df, df_div1):
     with col3:
         df_fmt.set_index("DAP", inplace=True)
         # Criar coluna e linha de totais
+        df_fmt.loc["Total"] = df_fmt.sum(numeric_only=True)
         # Arredondar valores mas manter o formato de int
         df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].apply(lambda x: f"{x:,.0f}")
-
-        df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].apply(
-            lambda x: int(str(x).replace(",", "")))
+        df_fmt["DV01_DAP"] = df_fmt["DV01_DAP"].apply(lambda x: f"{x:,.0f}")
+        df_fmt["DIV1_ATIVO"] = df_fmt["DIV1_ATIVO"].apply(lambda x: f"{x:.0f}")
+        df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].apply(lambda x: int(x))
+        df_fmt["DV01_DAP"] = df_fmt["DV01_DAP"].apply(lambda x: int(x))
+        df_fmt["DIV1_ATIVO"] = df_fmt["DIV1_ATIVO"].apply(lambda x: int(x))
         # Criar coluna de totais
-        df_fmt.loc["Total"] = df_fmt.sum(numeric_only=True)
-
+        df_fmt['Total'] = df_fmt.sum(axis=1)
         # Colocar as casas de milhar em negrito
-        df_fmt = df_fmt.style.format("{:,.1f}")
+        df_fmt = df_fmt.style.format("{:,.0f}")
         # Aplicar negrito e centralizar os cabeçalhos
         df_fmt = df_fmt.set_table_styles([
             {"selector": "th", "props": [
@@ -353,20 +304,12 @@ def atualizar_session_state_contratos(fundo: str, df_contr: pd.DataFrame):
 
 def analisar_ativo(df: pd.DataFrame, df_div1: pd.DataFrame):
     st.header("Analisar Ativo")
-
-    # NOVO ➌ – junta a base principal com os ativos SEM FUNDO
-    df_extras = st.session_state.get("df_extras", pd.DataFrame())
-    df_full = pd.concat([df, df_extras], ignore_index=True).copy()
-
-    # seleção de ativo agora usa a lista ampliada
     ativo_sel = st.sidebar.selectbox(
-        "Escolha o ativo:",
-        sorted(df_full["Ativo"].unique())
-    )
+        "Escolha o ativo:", sorted(df["Ativo"].unique()))
 
-    # a partir daqui troque `df`  →  `df_full`
-    fundos_disponiveis = df_full[df_full["Ativo"]
-                                 == ativo_sel]["Fundo"].unique().tolist()
+    # Filtrar fundo de origem se houver duplicidade
+    fundos_disponiveis = df[df["Ativo"] ==
+                            ativo_sel]["Fundo"].unique().tolist()
     if len(fundos_disponiveis) > 1:
         usar_escolha = st.sidebar.checkbox("Escolher fundo-origem?")
         if usar_escolha:
@@ -374,10 +317,10 @@ def analisar_ativo(df: pd.DataFrame, df_div1: pd.DataFrame):
                 "Fundo de origem:", fundos_disponiveis)
         else:
             fundo_origem = fundos_disponiveis[0]
-        df_asset = df_full[(df_full["Ativo"] == ativo_sel) & (
-            df_full["Fundo"] == fundo_origem)].copy()
+        df_asset = df[(df["Ativo"] == ativo_sel) & (
+            df["Fundo"] == fundo_origem)].copy()
     else:
-        df_asset = df_full[df_full["Ativo"] == ativo_sel].copy()
+        df_asset = df[df["Ativo"] == ativo_sel].copy()
 
     # Simulador de quantidade --------------------------------------------------
     qtd_atual = int(df_asset["Quantidade"].iloc[0])
@@ -403,9 +346,6 @@ def analisar_ativo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
     if st.sidebar.checkbox("Mostrar base do ativo"):
         st.dataframe(df_asset)
-        if "SEM FUNDO" in df_asset["Fundo"].unique():
-            st.warning(
-                "Ativos fora da carteira foram atualizados com as taxas do dia 25 de abril.")
         # Colocar checkbox para exportar base filtrada, mas trocando os pontos por vírgulas
         if st.checkbox("Exportar base filtrada", key="chk_export"):
             df_asset_export = df_asset.copy()
@@ -451,35 +391,16 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
     # Adicionar novos ativos ---------------------------------------------------
     novos_ativos = st.sidebar.checkbox("Adicionar novos ativos (temporário)")
-
+    # Precisio listar os ativos que estão no df_debentures2
     if novos_ativos:
-        df_extras = st.session_state.get("df_extras", pd.DataFrame())
-        base_cands = set(df["Ativo"])               # já existentes nos fundos
-        extra_cands = set(df_extras["Ativo"])        # só no debentures2
-        candidatos = sorted(
-            list((base_cands | extra_cands) - set(df_fundo["Ativo"])))
-
+        candidatos = sorted(list(set(df["Ativo"]) - set(df_fundo["Ativo"])))
         novos = st.sidebar.multiselect("Ativos a adicionar:", candidatos)
-
         for atv in novos:
-            if atv in base_cands:                                   # lógica antiga
-                fundos_src = df[df["Ativo"] == atv]["Fundo"].unique().tolist()
-                f_src = st.sidebar.selectbox(
-                    f"Fundo origem {atv}", fundos_src, key=f"src_{atv}")
-                dados = df[(df["Ativo"] == atv) & (
-                    df["Fundo"] == f_src)].copy()
-
-            else:                                                   # veio do df_extras
-                dados = df_extras[df_extras["Ativo"] == atv].copy()
-                # mantém default 100, mas o usuário pode mudar depois
-                dados["Juros projetados"] = dados["Fluxo descontado (R$)"] * \
-                    dados["Quantidade"]
-                dados["DIV1_ATIVO"] = (
-                    dados["Juros projetados"] * 0.0001 *
-                    (dados["Prazos (dias úteis)"] / 252)
-                )
-
-            # dados["Fundo"] = fundo_sel                    # destino final
+            fundos_src = df[df["Ativo"] == atv]["Fundo"].unique().tolist()
+            f_src = st.sidebar.selectbox(
+                f"Fundo origem {atv}", fundos_src, key=f"src_{atv}")
+            dados = df[(df["Ativo"] == atv) & (df["Fundo"] == f_src)].copy()
+            dados["Fundo"] = fundo_sel
             df_fundo = pd.concat([df_fundo, dados], ignore_index=True)
 
     # Simulador de quantidades -------------------------------------------------
@@ -530,9 +451,6 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
     if st.sidebar.checkbox("Mostrar base do fundo"):
         st.dataframe(df_fundo)
-        if "SEM FUNDO" in df_fundo["Fundo"].unique():
-            st.warning(
-                "Ativos fora da carteira foram atualizados com as taxas do dia 25 de abril.")
 
 
 def analisar_geral(df: pd.DataFrame, df_div1: pd.DataFrame):
@@ -568,10 +486,6 @@ def analisar_geral(df: pd.DataFrame, df_div1: pd.DataFrame):
 
     if st.sidebar.checkbox("Mostrar base consolidada"):
         st.dataframe(df_sel)
-        # Colocar um aviso de os ativos fora da cartera foram atualizados com as taxas do dia 25 de abril
-        if "SEM FUNDO" in df_sel["Fundo"].unique():
-            st.warning(
-                "Ativos fora da carteira foram atualizados com as taxas do dia 25 de abril.")
 
 
 ###############################################################################
