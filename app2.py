@@ -43,7 +43,7 @@ st.set_page_config(
 def process_df() -> pd.DataFrame:
     """Carrega posição + debêntures, devolvendo df_posicao_juros já agregado."""
     df_posicao = pd.read_excel(
-        "Dados/Relatório de Posição 2025-04-25.xlsx", sheet_name="Worksheet")
+        "Dados/Relatório de Posição 2025-04-25.xlsx", sheet_name="Worksheet")
     df_debentures = pd.read_csv("Dados/deb_table_completa2.csv")
     # Inserir aqui a leitura de um novo arquivo de debentures para ser combinado com o anterior
     # df_debentures2 = pd.read_csv("Dados/deb_table_completa3.csv")
