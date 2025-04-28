@@ -16,12 +16,11 @@ ativos = ['ACRC21', 'AEAB11', 'AEGP23', 'AESL17', 'AESLA5', 'AESLA7', 'AESLB7', 
 
 Cra = ["CRA Ferroeste 2ª Série", "CRI Bem Brasil"]
 df_posicao = pd.read_excel(
-    'Dados/Relatório de Posição 2025-04-24.xlsx', sheet_name='Worksheet')
+    'Dados/Relatório de Posição 2025-04-25.xlsx', sheet_name='Worksheet')
 df_posicao = df_posicao[df_posicao['Ativo'].isin(ativos)]
 ativos = df_posicao['Ativo'].unique()
 ativos = ativos.tolist()
 print(ativos)
-
 
 
 # ANALISAR SE O AESO1 ESTÁ INDO
@@ -196,7 +195,7 @@ try:
     df.columns = columns
 
     # Salvar o DataFrame em um arquivo CSV
-    df.to_csv("Dados/tabela_debentures_teste.csv", index=False)
+    df.to_csv("Dados/tabela_debentures222.csv", index=False)
     print("Tabela salva com sucesso!")
 
 
