@@ -50,7 +50,7 @@ def process_dap_counts(df_posicao_raw: pd.DataFrame) -> Tuple[pd.DataFrame, pd.D
       2. total consolidado  → colunas [DAP, Quantidade]
     """
     mask_dap = df_posicao_raw["Ativo"].astype(str).str.startswith("DAP", na=False)
-    mask_estr = df_posicao_raw["Estratégia"].astype(str).str.startswith("Hedge IPCA", na=False)
+    mask_estr = df_posicao_raw["Estratégia"].astype(str).str.contains("Hedge IPCA", na=False)
     df_dap = df_posicao_raw[mask_dap & mask_estr].copy()
 
     # Normaliza ticker p/ DAPNN
