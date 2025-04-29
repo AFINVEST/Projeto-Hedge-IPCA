@@ -1,20 +1,24 @@
-# DashHedge_rev.py – revisão 2025‑04‑29
-# -----------------------------------------------------------------------------
-# ▸ NOVO: Contagem de contratos DAP já existentes (df_posicao) para cruzar com
-#         a quantidade necessária calculada via DV01.
-# ▸ Abrange visões "Analisar Fundo" e "Análise Geral".
-# ▸ Mantém toda a lógica anterior – adições estão claramente marcadas com
-#         «### DAP …» para facilitar busca.
-# -----------------------------------------------------------------------------
+# DashHedge.py – nova revisão (controle de duplicidades, filtros extras e gestão de contratos)
+# ----------------------------------------------------------------------------------
+# Alterações principais
+# 1. Evita fluxos duplicados em *ambas* as visões.
+#    · Analisar Ativo: se o ativo existir em vários fundos, o usuário pode escolher o fundo-origem;
+#      caso não marque nada, o primeiro fundo é usado.
+#    · Analisar Fundo: verificação automática + aviso se houver (Ativo, Data) duplicados.
+# 2. Filtro genérico por colunas (qualquer coluna da base) via painel lateral.
+# 3. Gestão avançada do df_total (contratos):
+#    · Opção de **sobrescrever** coluna existente ao salvar.
+#    · Botão para **apagar** apenas uma coluna específica.
+# 4. Layout e cálculos originais preservados.
+# ----------------------------------------------------------------------------------
 
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go  # reservado para uso futuro
-import re
+import plotly.graph_objects as go  # ainda não usado, mas mantido
 import io
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 from plotnine import (
     ggplot, aes, geom_col, labs, theme, element_text, element_rect,
@@ -32,70 +36,18 @@ st.set_page_config(
 )
 
 ################################################################################
-# FUNÇÕES AUXILIARES – NOVAS
+# FUNÇÕES DE CARGA / PROCESSAMENTO (bases inalteradas)
 ################################################################################
 
-def _normalizar_ticker_dap(tk: str) -> str:
-    """Converte algo como 'DAPAGO30'  →  'DAP30'. Mantém 'DAP25' intacto."""
-    if not isinstance(tk, str) or not tk.startswith("DAP"):
-        return None
-    m = re.search(r"DAP.*?(\d{2})$", tk)
-    return f"DAP{m.group(1)}" if m else None
-
-
-def process_dap_counts(df_posicao_raw: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Filtra df_posicao completo, retendo somente DAPs Hedge IPCA e
-    devolve 2 DataFrames:
-      1. por fundo          → colunas [Fundo, DAP, Quantidade]
-      2. total consolidado  → colunas [DAP, Quantidade]
-    """
-    mask_dap = df_posicao_raw["Ativo"].astype(str).str.startswith("DAP", na=False)
-    mask_estr = df_posicao_raw["Estratégia"].astype(str).str.startswith("Hedge IPCA", na=False)
-    df_dap = df_posicao_raw[mask_dap & mask_estr].copy()
-
-    # Normaliza ticker p/ DAPNN
-    df_dap["DAP"] = df_dap["Ativo"].apply(_normalizar_ticker_dap)
-    df_dap.dropna(subset=["DAP"], inplace=True)
-
-    # Garante numérico
-    df_dap["Quantidade"] = pd.to_numeric(df_dap["Quantidade"], errors="coerce").fillna(0)
-
-    by_fundo = (
-        df_dap.groupby(["Fundo", "DAP"], as_index=False)["Quantidade"].sum()
-    )
-    total = (
-        df_dap.groupby("DAP", as_index=False)["Quantidade"].sum()
-    )
-    return by_fundo, total
-
-################################################################################
-# FUNÇÕES DE CARGA / PROCESSAMENTO (bases originais + DAP extra)
-################################################################################
 
 def process_df() -> pd.DataFrame:
-    """Carrega posição + debêntures e devolve df_posicao_juros já agregado.
-    Também armazena em session_state:
-        • df_extras            – ativos IPCA fora da carteira
-        • dap_counts_by_fundo  – contratos DAP hedge já existentes por fundo
-        • dap_counts_total     – contratos DAP hedge já existentes consolidados
-    """
-    # --- Posição completa (sem filtros) --------------------------------------
-    df_posicao_raw = pd.read_excel(
-        "Dados/Relatório de Posição 2025-04-25.xlsx", sheet_name="Worksheet"
-    )
-    st.session_state["df_posicao_raw"] = df_posicao_raw.copy()
-
-    # ================================================================
-    # 1. Processa DAPs já existentes (antes de qualquer filtro)
-    # ================================================================
-    counts_by_fundo, counts_total = process_dap_counts(df_posicao_raw)
-    st.session_state["dap_counts_by_fundo"] = counts_by_fundo
-    st.session_state["dap_counts_total"] = counts_total
-
-    # ----------------------------------------------------------------
-    # 2. Fluxos de debêntures conforme versão anterior
-    # ----------------------------------------------------------------
+    """Carrega posição + debêntures, devolvendo df_posicao_juros já agregado."""
+    df_posicao = pd.read_excel(
+        "Dados/Relatório de Posição 2025-04-25.xlsx", sheet_name="Worksheet")
     df_debentures = pd.read_csv("Dados/deb_table_completa2.csv")
+    # Inserir aqui a leitura de um novo arquivo de debentures para ser combinado com o anterior
+    # df_debentures2 = pd.read_csv("Dados/deb_table_completa3.csv")
+    # Os ativos de df_debentures2 são diferentes dos de df_debentures e eles não estçao em nenhum fundo ou seja não estão em df_posicao, mas eu quero que eles sejam adicionados ao df_debentures se o usuario adicionar - na opcção de adicionar novos ativos - eles a algum fundo. Se for necessário por padrao eles devem ser cadastrados com quantidade 100 e do fundo "SEM FUNDO" - esses ativos não podem aparecer nos filtros padrões da página, somente nos filtros de adicionar novos ativos.
 
     for col in ["Juros projetados", "Fluxo descontado (R$)", "Amortizações"]:
         df_debentures[col] = (
@@ -109,46 +61,48 @@ def process_df() -> pd.DataFrame:
     ativos = obter_lista_ativos_original() + obter_lista_outros_original()
     dap_dict = obter_dap_dict_original()
 
-    # ----------------------------------------------------------------
-    # 2.1 Filtra df_posicao para exposição das debêntures (mantém counts DAP
-    #     intocados em session_state)
-    # ----------------------------------------------------------------
-    df_posicao = df_posicao_raw[df_posicao_raw["Ativo"].isin(ativos)].copy()
+    df_posicao = df_posicao[df_posicao["Ativo"].isin(ativos)]
 
-    # --- restante da rotina original (formatação + merge) --------------------
     df_debentures.columns = [
         "Dados do evento", "Data de pagamento", "Prazos (dias úteis)",
         "Dias entre pagamentos", "Expectativa de juros (%)", "Juros projetados",
         "Amortizações", "Fluxo descontado (R$)", "Ativo",
     ]
-    df_debentures = df_debentures[df_debentures["Ativo"].isin(df_posicao["Ativo"])]
+    df_debentures = df_debentures[df_debentures["Ativo"].isin(
+        df_posicao["Ativo"])]
 
-    df_debentures["Data de pagamento"] = pd.to_datetime(df_debentures["Data de pagamento"])
-    df_debentures["Data"] = df_debentures["Data de pagamento"].dt.strftime("%Y-%m")
+    df_debentures["Data de pagamento"] = pd.to_datetime(
+        df_debentures["Data de pagamento"])
+    df_debentures["Data"] = df_debentures["Data de pagamento"].dt.strftime(
+        "%Y-%m")
     df_debentures["Ano"] = df_debentures["Data de pagamento"].dt.year
-    df_debentures["Semestre"] = (
-        df_debentures["Data de pagamento"].dt.quarter.replace({1: "1º Semestre", 2: "1º Semestre", 3: "2º Semestre", 4: "2º Semestre"})
+    df_debentures["Semestre"] = df_debentures["Data de pagamento"].dt.quarter.replace(
+        {1: "1º Semestre", 2: "1º Semestre", 3: "2º Semestre", 4: "2º Semestre"}
     )
 
     df_quant = (
-        df_posicao.groupby(["Fundo", "Ativo"]).sum()[["Quantidade", "Valor"]].reset_index()
+        df_posicao.groupby(["Fundo", "Ativo"]).sum()[
+            ["Quantidade", "Valor"]].reset_index()
     )
-    df_quant["Valor"] = (
-        df_quant["Valor"].astype(str).str.replace(",", ".").astype(float)
-    )
+    df_quant["Valor"] = df_quant["Valor"].astype(
+        str).str.replace(",", ".").astype(float)
 
     df_debentures.drop(columns=["Data de pagamento"], inplace=True)
 
     df_merged = pd.merge(df_debentures, df_quant, on="Ativo", how="left")
-    df_merged["Juros projetados"] = df_merged["Fluxo descontado (R$)"] * df_merged["Quantidade"]
-    df_merged["Amortizações"] = df_merged["Amortizações"] * df_merged["Quantidade"]
-    df_merged["DIV1_ATIVO"] = df_merged["Juros projetados"] * 0.0001 * (df_merged["Prazos (dias úteis)"] / 252)
+    df_merged["Juros projetados"] = df_merged["Fluxo descontado (R$)"] * \
+        df_merged["Quantidade"]
+    df_merged["Amortizações"] = df_merged["Amortizações"] * \
+        df_merged["Quantidade"]
+    df_merged["DIV1_ATIVO"] = (
+        df_merged["Juros projetados"] * 0.0001 *
+        (df_merged["Prazos (dias úteis)"] / 252)
+    )
     df_merged["DAP"] = df_merged["Ano"].map(dap_dict)
 
-    # ----------------------------------------------------------------
-    # 3. Ativos extras (df_debentures2) – permanece igual
-    # ----------------------------------------------------------------
     df_debentures2 = pd.read_csv("Dados/deb_table_completa3.csv")
+
+    # mesmas limpezas numéricas
     for col in ["Juros projetados", "Fluxo descontado (R$)", "Amortizações"]:
         df_debentures2[col] = (
             df_debentures2[col]
@@ -157,37 +111,58 @@ def process_df() -> pd.DataFrame:
             .str.replace(",", ".")
             .astype(float)
         )
+
+    # mesmos nomes de coluna e colunas de data
     df_debentures2.columns = [
         "Dados do evento", "Data de pagamento", "Prazos (dias úteis)",
         "Dias entre pagamentos", "Expectativa de juros (%)", "Juros projetados",
         "Amortizações", "Fluxo descontado (R$)", "Ativo",
     ]
-    df_debentures2["Data de pagamento"] = pd.to_datetime(df_debentures2["Data de pagamento"])
-    df_debentures2["Data"] = df_debentures2["Data de pagamento"].dt.strftime("%Y-%m")
+    df_debentures2["Data de pagamento"] = pd.to_datetime(
+        df_debentures2["Data de pagamento"])
+    df_debentures2["Data"] = df_debentures2["Data de pagamento"].dt.strftime(
+        "%Y-%m")
     df_debentures2["Ano"] = df_debentures2["Data de pagamento"].dt.year
-    df_debentures2["Semestre"] = (
-        df_debentures2["Data de pagamento"].dt.quarter.replace({1: "1º Semestre", 2: "1º Semestre", 3: "2º Semestre", 4: "2º Semestre"})
+    df_debentures2["Semestre"] = df_debentures2["Data de pagamento"].dt.quarter.replace(
+        {1: "1º Semestre", 2: "1º Semestre", 3: "2º Semestre", 4: "2º Semestre"}
     )
-    df_debentures2 = df_debentures2[~df_debentures2["Ativo"].isin(df_debentures["Ativo"].unique())]
+    df_debentures2 = df_debentures2[
+        ~df_debentures2["Ativo"].isin(df_debentures["Ativo"].unique())
+    ].copy()
 
+    # armazena só para uso posterior (NÃO entra na visão principal)
     df_debentures2["Quantidade"] = 100
     df_debentures2["Fundo"] = "SEM FUNDO"
-    df_debentures2["Juros projetados"] = df_debentures2["Fluxo descontado (R$)"] * df_debentures2["Quantidade"]
-    df_debentures2["Amortizações"] = df_debentures2["Amortizações"] * df_debentures2["Quantidade"]
-    df_debentures2["DIV1_ATIVO"] = df_debentures2["Juros projetados"] * 0.0001 * (df_debentures2["Prazos (dias úteis)"] / 252)
-    df_debentures2["DAP"] = df_debentures2["Ano"].map(dap_dict)
+    # ─────────── recalcula métricas para os ativos extras ────────────
+    df_debentures2["Juros projetados"] = (
+        df_debentures2["Fluxo descontado (R$)"] * df_debentures2["Quantidade"]
+    )
 
+    df_debentures2["Amortizações"] = (
+        df_debentures2["Amortizações"] * df_debentures2["Quantidade"]
+    )
+
+    df_debentures2["DIV1_ATIVO"] = (
+        df_debentures2["Juros projetados"] * 0.0001 *
+        (df_debentures2["Prazos (dias úteis)"] / 252)
+    )
+
+    df_debentures2["DAP"] = df_debentures2["Ano"].map(dap_dict)
+    # ───────────────────────────────────────────────────────────
     st.session_state["df_extras"] = df_debentures2.copy()
 
-    # saída final da função
     return df_merged.rename(columns={"Data": "Data de pagamento"})
 
 
 def process_div01() -> pd.DataFrame:
-    df_div1 = pd.read_excel("Dados/AF_Trading.xlsm", sheet_name="Base IPCA", skiprows=16)
+    df_div1 = pd.read_excel("Dados/AF_Trading.xlsm",
+                            sheet_name="Base IPCA", skiprows=16)
     df_div1 = df_div1.iloc[:, :13].dropna()[["DAP", "DV01"]]
-    df_div1["DAP"] = df_div1["DAP"].apply(lambda x: x[:3] + x[-2:] if isinstance(x, str) and len(x) >= 5 else x)
+    df_div1["DAP"] = df_div1["DAP"].apply(
+        lambda x: x[:3] + x[-2:] if isinstance(x, str) and len(x) >= 5 else x)
     return df_div1
+
+# Helpers (listas gigantes)
 
 
 def obter_lista_ativos_original() -> List[str]:
@@ -210,14 +185,8 @@ def obter_dap_dict_original() -> Dict[int, str]:
         2040: "DAP40", 2041: "DAP40", 2042: "DAP40", 2043: "DAP40", 2044: "DAP40", 2045: "DAP40", 2046 : "DAP40", 2047 : "DAP40", 2048 : "DAP40", 2049 : "DAP40", 2050 : "DAP40", 2051 : "DAP40", 2052 : "DAP40", 2053 : "DAP40", 2054 : "DAP40", 2055 : "DAP40", 2056 : "DAP40", 2057 : "DAP40", 2058 : "DAP40", 2059 : "DAP40", 2060 : "DAP40"
     }
 
-
 ###############################################################################
-# UTILITÁRIOS DE UI (sem alterações exceto import CSS)
-###############################################################################
-# ... (o restante das funções check_duplicates, filtro_generico, etc. permanecem
-# inalteradas – suprimidas aqui por brevidade, mas integram o arquivo completo)
-###############################################################################
-# VISUALIZAÇÕES – ATUALIZAÇÃO PARA TRAZER DAP CARTEIRA
+# UTILITÁRIOS DE UI
 ###############################################################################
 
 
@@ -271,71 +240,60 @@ def plot_relacao_juros(df):
     st.pyplot(p.draw(), use_container_width=True)
 
 
-
-def plot_div1_layout(df: pd.DataFrame, df_div1: pd.DataFrame, carteira: pd.DataFrame | None = None):
-    """Exibe gráfico + tabela DIV1/DAP. Se *carteira* fornecido, cruza com
-    quantidade já existente (coluna 'CARTEIRA')."""
-
-    df_sum = (
-        df.groupby("DAP", as_index=False)["DIV1_ATIVO"].sum()
-        .merge(df_div1, on="DAP", how="left")
-        .rename(columns={"DV01": "DV01_DAP"})
-    )
+def plot_div1_layout(df, df_div1):
+    df_sum = df.groupby("DAP", as_index=False)["DIV1_ATIVO"].sum()
+    df_sum = df_sum.merge(df_div1, on="DAP", how="left").rename(
+        columns={"DV01": "DV01_DAP"})
     df_sum["CONTRATOS"] = df_sum["DIV1_ATIVO"] / df_sum["DV01_DAP"]
+    df_fmt = df_sum.copy()
+    # df_fmt["DIV1_ATIVO"] = df_fmt["DIV1_ATIVO"].apply(lambda x: f"{x:.0f}")
 
-    # -----------------------------------------------------------
-    # ▼ Integra contratos já na carteira
-    # -----------------------------------------------------------
-    if carteira is not None and not carteira.empty:
-        cartera_norm = carteira.copy()
-        cartera_norm["DAP"] = cartera_norm["DAP"].astype(str)
-        df_sum = df_sum.merge(cartera_norm, on="DAP", how="left")
-        df_sum.rename(columns={"CARTEIRA": "CARTEIRA"}, inplace=True)
-        df_sum["CARTEIRA"].fillna(0, inplace=True)
-        df_sum["FALTAM"] = df_sum["CONTRATOS"] + df_sum["CARTEIRA"]
-
-    # -----------------------------------------------------------
-    # ► Gráfico – DIV1 por DAP (mantido)
-    # -----------------------------------------------------------
     col1, col2, col3 = st.columns([4.9, 0.2, 4.9])
     with col1:
         p1 = (
             ggplot(df_sum, aes(x="DAP", y="DIV1_ATIVO"))
             + geom_col(fill="#1F4E79")
-            + geom_text(aes(label=df_sum["DIV1_ATIVO"].apply(lambda x: f"{x:,.0f}")), va="bottom", size=8)
+            + geom_text(aes(label=df_sum["DIV1_ATIVO"].apply(
+                lambda x: f"{x:,.0f}")), va="bottom", size=8)
             + labs(title="DIV1 vs DAP", x="DAP", y="DIV1 (R$)")
             + theme(figure_size=(6, 4), axis_text_x=element_text(rotation=45, ha="right"),
                     panel_background=element_rect(fill="white"))
         )
         st.pyplot(p1.draw(), use_container_width=True)
-
     with col2:
-        st.html("<div style='border-left:2px solid rgba(49,51,63,0.2);height:60vh;margin:auto'></div>")
-
+        st.html(
+            "<div style='border-left:2px solid rgba(49,51,63,0.2);height:60vh;margin:auto'></div>")
     with col3:
-        df_fmt = df_sum.copy()
-        # Arredonda CONTRATOS
-        df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].round().astype(int)
-        if "CARTEIRA" in df_fmt.columns:
-            df_fmt["CARTEIRA"] = df_fmt["CARTEIRA"].round().astype(int)
-            df_fmt["FALTAM"] = df_fmt["FALTAM"].round().astype(int)
         df_fmt.set_index("DAP", inplace=True)
+        # Criar coluna e linha de totais
+        # Arredondar valores mas manter o formato de int
+        df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].apply(lambda x: f"{x:,.0f}")
 
-        # Totais
-        totais = df_fmt.sum(numeric_only=True)
-        df_fmt.loc["Total"] = totais
+        df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].apply(
+            lambda x: int(str(x).replace(",", "")))
+        # Criar coluna de totais
+        df_fmt.loc["Total"] = df_fmt.sum(numeric_only=True)
 
-        # Formatação
-        sty = df_fmt.style.format("{:,.0f}")
-        sty = sty.set_table_styles([
-            {"selector": "th", "props": [("font-weight", "bold"), ("text-align", "center")]},
-            {"selector": "td", "props": [("text-align", "right")]},
-            {"selector": "caption", "props": [("font-size", "16px"), ("font-weight", "bold")]},
+        # Colocar as casas de milhar em negrito
+        df_fmt = df_fmt.style.format("{:,.1f}")
+        # Aplicar negrito e centralizar os cabeçalhos
+        df_fmt = df_fmt.set_table_styles([
+            {"selector": "th", "props": [
+                ("font-weight", "bold"), ("text-align", "center")]},
+            {"selector": "td", "props": [("text-align", "right")]}
         ])
-        st.table(sty.set_caption("Tabela de DAPs: Necessário × Carteira"))
 
-    # Retorna apenas DAP/CONTRATOS (p/ rotina de salvar posição)
+        df_fmt = df_fmt.set_properties(**{"text-align": "right"})
+        df_fmt = df_fmt.set_caption("Tabela de DAPs e Contratos").set_table_styles(
+            [{"selector": "caption", "props": [
+                ("font-size", "16px"), ("font-weight", "bold")]}]
+        )
+        st.table(df_fmt)
     return df_sum[["DAP", "CONTRATOS"]].set_index("DAP")
+
+###############################################################################
+# CONTRATOS – SESSION STATE
+###############################################################################
 
 
 def atualizar_session_state_contratos(fundo: str, df_contr: pd.DataFrame):
@@ -388,11 +346,10 @@ def atualizar_session_state_contratos(fundo: str, df_contr: pd.DataFrame):
         st.download_button("Baixar Excel", data=to_excel_bytes(df_plot),
                            file_name="posicoes_por_fundo.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-
-
 ###############################################################################
-# FUNÇÕES DE PÁGINA – AJUSTES PARA PASSAR CONTAGEM CARTEIRA
+# PÁGINAS PRINCIPAIS
 ###############################################################################
+
 
 def analisar_ativo(df: pd.DataFrame, df_div1: pd.DataFrame):
     st.header("Analisar Ativo")
@@ -478,9 +435,9 @@ def analisar_ativo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
 def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
     st.header("Analisar Fundo")
-    fundo_sel = st.sidebar.selectbox("Selecione o fundo:", sorted(df["Fundo"].unique()))
+    fundo_sel = st.sidebar.selectbox(
+        "Selecione o fundo:", sorted(df["Fundo"].unique()))
     df_fundo = df[df["Fundo"] == fundo_sel].copy()
-
 
     # Filtro de ativos internos ------------------------------------------------
     ativos_fundo = sorted(df_fundo["Ativo"].unique())
@@ -566,33 +523,31 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
     # Verifica duplicidades ----------------------------------------------------
     check_duplicates(df_fundo, "Analisar Fundo")
 
-    # ► Obtém quantidade de contratos já na carteira para esse fundo
-    dap_by_fundo = st.session_state.get("dap_counts_by_fundo", pd.DataFrame())
-    carteira_fundo = (
-        dap_by_fundo[dap_by_fundo["Fundo"] == fundo_sel][["DAP", "Quantidade"]]
-        .rename(columns={"Quantidade": "CARTEIRA"})
-    )
-
-    # Visualizações & contratos
+    # Visualizações & contratos -------------------- ---------------------------
     plot_relacao_juros(df_fundo)
-    df_contr = plot_div1_layout(df_fundo, df_div1, carteira_fundo)
+    df_contr = plot_div1_layout(df_fundo, df_div1)
     atualizar_session_state_contratos(fundo_sel, df_contr)
 
-    # … (opção de mostrar base do fundo permanece)
+    if st.sidebar.checkbox("Mostrar base do fundo"):
+        st.dataframe(df_fundo)
+        if "SEM FUNDO" in df_fundo["Fundo"].unique():
+            st.warning(
+                "Ativos fora da carteira foram atualizados com as taxas do dia 25 de abril.")
 
 
 def analisar_geral(df: pd.DataFrame, df_div1: pd.DataFrame):
+    """Visão consolidada de múltiplos fundos simultaneamente."""
     st.header("Análise Geral – Consolidado de Fundos")
 
-    # --- Seleção múltipla de fundos (igual)
+    # --- Seleção de múltiplos fundos -----------------------------------------
     todos_fundos = sorted(df["Fundo"].unique())
-    fundos_sel = st.sidebar.multiselect("Escolha os fundos:", todos_fundos, default=None)
+    fundos_sel = st.sidebar.multiselect(
+        "Escolha os fundos para compor a visão:", todos_fundos, default=None)
     if not fundos_sel:
         fundos_sel = todos_fundos
 
     df_sel = df[df["Fundo"].isin(fundos_sel)].copy()
 
-    
     # --- Seleção opcional de ativos dentro desses fundos ----------------------
     ativos_disp = sorted(df_sel["Ativo"].unique())
     ativos_filtr = st.sidebar.multiselect(
@@ -607,21 +562,10 @@ def analisar_geral(df: pd.DataFrame, df_div1: pd.DataFrame):
     # Checa duplicidades -------------------------------------------------------
     # check_duplicates(df_sel, "Análise Geral")
 
-    # … (restante dos filtros)
-
-    # ► Quantos contratos já existem nestes fundos?
-    dap_by_fundo = st.session_state.get("dap_counts_by_fundo", pd.DataFrame())
-    carteira_geral = (
-        dap_by_fundo[dap_by_fundo["Fundo"].isin(fundos_sel)]
-        .groupby("DAP", as_index=False)["Quantidade"].sum()
-        .rename(columns={"Quantidade": "CARTEIRA"})
-    )
-
-    # Visualizações
+    # Visualizações ------------------------------------------------------------
     plot_relacao_juros(df_sel)
-    plot_div1_layout(df_sel, df_div1, carteira_geral)
+    plot_div1_layout(df_sel, df_div1)
 
-    
     if st.sidebar.checkbox("Mostrar base consolidada"):
         st.dataframe(df_sel)
         # Colocar um aviso de os ativos fora da cartera foram atualizados com as taxas do dia 25 de abril
@@ -631,9 +575,9 @@ def analisar_geral(df: pd.DataFrame, df_div1: pd.DataFrame):
 
 
 ###############################################################################
-# (Demais funções utilitárias, CSS e main() seguem SEM alterações relevantes,
-#  apenas atualizando assinaturas onde plot_div1_layout foi chamado.)
+# CSS / JS PERSONALIZADO
 ###############################################################################
+
 
 def add_custom_css():
     # CSS personalizado
@@ -774,19 +718,25 @@ def add_custom_css():
     )
 
 
+###############################################################################
+# MAIN
+###############################################################################
+
+
+def main():
+    add_custom_css()
+    df = process_df()
+    df_div1 = process_div01()
+    st.sidebar.title("Escolha a visão")
+    modo = st.sidebar.radio("Modo de análise", [
+                            "Analisar Ativo", "Analisar Fundo", "Análise Geral"], index=0)
+    if modo == "Analisar Ativo":
+        analisar_ativo(df, df_div1)
+    elif modo == "Analisar Fundo":
+        analisar_fundo(df, df_div1)
+    else:
+        analisar_geral(df, df_div1)
+
 
 if __name__ == "__main__":
-    # CSS pessoal, carregamento de dados e roteamento principal – inalterados
-    add_custom_css()
-    df_master = process_df()
-    df_div1 = process_div01()
-
-    st.sidebar.title("Escolha a visão")
-    modo = st.sidebar.radio("Modo de análise", ["Analisar Ativo", "Analisar Fundo", "Análise Geral"], index=0)
-
-    if modo == "Analisar Ativo":
-        analisar_ativo(df_master, df_div1)  # assinatura original aceita apenas 2 args
-    elif modo == "Analisar Fundo":
-        analisar_fundo(df_master, df_div1)
-    else:
-        analisar_geral(df_master, df_div1)
+    main()
