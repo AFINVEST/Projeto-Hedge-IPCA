@@ -15,11 +15,14 @@ import plotly.graph_objects as go  # reservado para uso futuro
 import re
 import io
 from typing import Dict, List, Tuple
-
 from plotnine import (
     ggplot, aes, geom_col, labs, theme, element_text, element_rect,
-    scale_fill_manual, geom_text
+    scale_fill_manual, geom_text, geom_line, geom_point,
+    scale_color_identity, geom_label
 )
+
+from os import PathLike
+
 
 ###############################################################################
 # CONFIGURAÇÃO GERAL
@@ -44,33 +47,92 @@ def _normalizar_ticker_dap(tk: str) -> str:
 
 
 def process_dap_counts(df_posicao_raw: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Filtra df_posicao completo, retendo somente DAPs Hedge IPCA e
-    devolve 2 DataFrames:
-      1. por fundo          → colunas [Fundo, DAP, Quantidade]
-      2. total consolidado  → colunas [DAP, Quantidade]
-    """
-    mask_dap = df_posicao_raw["Ativo"].astype(str).str.startswith("DAP", na=False)
+    # ---------------------------------------------------------------------
+    # 1) Seleciona apenas DAPs que já são Hedge‐IPCA
+    # ---------------------------------------------------------------------
+    mask_dap  = df_posicao_raw["Ativo"].astype(str).str.startswith("DAP", na=False)
     mask_estr = df_posicao_raw["Estratégia"].astype(str).str.contains("Hedge IPCA", na=False)
     df_dap = df_posicao_raw[mask_dap & mask_estr].copy()
 
-    # Normaliza ticker p/ DAPNN
+    # ---------------------------------------------------------------------
+    # 2) ► NOVO – extrai a quantidade que está dentro da string “Hedge IPCA (…)”
+    # ---------------------------------------------------------------------
+    mask_qtd = df_dap["Estratégia"].str.contains(r"Hedge IPCA\s*\(", na=False)
+    df_dap.loc[mask_qtd, "Quantidade"] = (
+        df_dap.loc[mask_qtd, "Estratégia"]
+              .str.extract(r"Hedge IPCA\s*\(\s*([-+]?\d+)\s*\)")[0]  # pega o número entre parênteses
+              .astype(int)
+    )
+
+    # ---------------------------------------------------------------------
+    # 3) Continua igual: normaliza ticker, garante numérico, faz os groupbys
+    # ---------------------------------------------------------------------
     df_dap["DAP"] = df_dap["Ativo"].apply(_normalizar_ticker_dap)
     df_dap.dropna(subset=["DAP"], inplace=True)
 
-    # Garante numérico
+    # caso tenha linhas cujo “Quantidade” ainda esteja vazio, zera-as
     df_dap["Quantidade"] = pd.to_numeric(df_dap["Quantidade"], errors="coerce").fillna(0)
 
-    by_fundo = (
-        df_dap.groupby(["Fundo", "DAP"], as_index=False)["Quantidade"].sum()
-    )
-    total = (
-        df_dap.groupby("DAP", as_index=False)["Quantidade"].sum()
-    )
+    by_fundo = df_dap.groupby(["Fundo", "DAP"], as_index=False)["Quantidade"].sum()
+    total    = df_dap.groupby("DAP",          as_index=False)["Quantidade"].sum()
     return by_fundo, total
+
 
 ################################################################################
 # FUNÇÕES DE CARGA / PROCESSAMENTO (bases originais + DAP extra)
 ################################################################################
+
+
+def _prep_spread_df(path: str | PathLike) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Lê o Excel de spreads (Planilha2) e devolve:
+        • df_melt – longo, p/ gráfico em linha (Spread × Data)
+        • df_vert – wide -> longo p/ gráfico Vertice × Spread (um dia)
+    """
+    dados = pd.read_excel(path, sheet_name="Planilha2")
+
+    # renomeia & filtra zeros
+    cols = ['DATA','DAP25','DAP26','DAP27','DAP28','DAP30','DAP32','DAP35','DAP40',
+            'NTNB25','NTNB26','NTNB27','NTNB28','NTNB30','NTNB32','NTNB35','NTNB40']
+    dados.columns = cols
+    for c in cols[1:]:
+        dados = dados[dados[c] != 0]
+
+    # calcula spreads
+    for y in ["25","26","27","28","30","32","35","40"]:
+        dados[f"Spread B{y}/DAP{y}"] = dados[f"NTNB{y}"] - dados[f"DAP{y}"]
+    dados_diff = dados.filter(regex=r"^DATA$|^Spread").copy()
+
+    # -------- DF para gráfico em linha -------- #
+    df_melt = (
+        dados_diff
+        .melt(id_vars="DATA", var_name="Tipo", value_name="Spread")
+        .assign(Data_Str=lambda x: x["DATA"].dt.strftime("%Y-%m-%d"))
+    )
+
+    cores = {
+        'Spread B25/DAP25': '#003366',
+        'Spread B26/DAP26': '#1f77b4',
+        'Spread B27/DAP27': '#2ca02c',
+        'Spread B28/DAP28': '#d62728',
+        'Spread B30/DAP30': '#9467bd',
+        'Spread B32/DAP32': '#8c564b',
+        'Spread B35/DAP35': '#e377c2',
+        'Spread B40/DAP40': '#7f7f7f',
+    }
+    df_melt["Color"] = df_melt["Tipo"].map(cores)
+
+    # -------- DF para gráfico Spread (Y) × Vértice (X) -------- #
+    df_vert = (
+        dados_diff.set_index("DATA")
+        .pipe(lambda df_: df_.assign(**{c.split()[1]: df_[c] for c in df_.columns}))
+        .drop(columns=dados_diff.columns[1:])              # só as novas cols
+        .reset_index()
+        .melt(id_vars="DATA", var_name="Vertice", value_name="Spread")
+        .assign(Vertice=lambda x: x["Vertice"].str[-2:].astype(int))  # 25,26,…
+    )
+    return df_melt, df_vert
+
 
 def process_df() -> pd.DataFrame:
     """Carrega posição + debêntures e devolve df_posicao_juros já agregado.
@@ -313,7 +375,7 @@ def plot_div1_layout(df: pd.DataFrame, df_div1: pd.DataFrame, carteira: pd.DataF
         st.html("<div style='border-left:2px solid rgba(49,51,63,0.2);height:60vh;margin:auto'></div>")
 
     with col3:
-        df_fmt = df_sum.copy()
+        df_fmt = df_sum.copy() 
         # Arredonda CONTRATOS
         df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].round().astype(int)
         if "CARTEIRA" in df_fmt.columns:
@@ -629,6 +691,170 @@ def analisar_geral(df: pd.DataFrame, df_div1: pd.DataFrame):
             st.warning(
                 "Ativos fora da carteira foram atualizados com as taxas do dia 25 de abril.")
 
+def analisar_spreads() -> None:
+    """
+    Parte de spreads NTNB × DAP – filtros, linha Plotly, barras Plotly.
+    """
+    st.subheader("Análise – Spreads NTNB × DAP")
+
+    # ▸ carrega uma vez -----------------------------------------------------
+    if "df_spread_melt" not in st.session_state:
+        df_melt_tmp, df_vert_tmp = _prep_spread_df("BBG - ECO DASH_te.xlsx")
+        st.session_state["df_spread_melt"] = df_melt_tmp
+        st.session_state["df_spread_vert"] = df_vert_tmp
+
+    df_melt_full = st.session_state["df_spread_melt"]
+    df_vert_full = st.session_state["df_spread_vert"]
+
+    # ▸ sidebar – filtros comuns ------------------------------------------
+    with st.sidebar:
+        st.write('---')
+        st.markdown("## Filtros – Spreads")
+        st.markdown("#### Spread vs. Data")
+
+        min_date = df_melt_full["DATA"].min().date()
+        max_date = df_melt_full["DATA"].max().date()
+
+        col_a, col_b = st.columns(2)
+        start_date = col_a.date_input("Início", min_value=min_date,
+                                      max_value=max_date, value=min_date,
+                                      key="hs_start")
+        end_date   = col_b.date_input("Fim",    min_value=min_date,
+                                      max_value=max_date, value=max_date,
+                                      key="hs_end")
+
+        freq_map = {"Diária": "D", "Semanal": "W", "Mensal": "M"}
+        freq = st.selectbox("Frequência", list(freq_map), 0)
+
+    if start_date > end_date:
+        st.warning("A data inicial é posterior à final – ajuste o intervalo.")
+        return
+
+    # ▸ aplica período & reamostra -----------------------------------------
+    mask     = df_melt_full["DATA"].dt.date.between(start_date, end_date)
+    df_melt  = df_melt_full[mask].copy()
+    df_vert  = df_vert_full[df_vert_full["DATA"].dt.date
+                            .between(start_date, end_date)].copy()
+
+    if freq != "Diária":
+        rule = freq_map[freq]                       # "W" ou "M"
+        # – df_melt
+        wide = (df_melt.pivot(index="DATA", columns="Tipo", values="Spread")
+                      .resample(rule, label="right", closed="right")
+                      .median()
+                      .dropna(how="all"))
+        df_melt = (wide.stack().rename("Spread").reset_index())
+        df_melt["Data_Str"] = df_melt["DATA"].dt.strftime("%Y-%m-%d")
+        color_map = (df_melt_full.drop_duplicates("Tipo")
+                                  .set_index("Tipo")["Color"])
+        df_melt["Color"] = df_melt["Tipo"].map(color_map)
+        # – df_vert
+        wide_v = (df_vert.pivot(index="DATA", columns="Vertice", values="Spread")
+                          .resample(rule, label="right", closed="right")
+                          .median()
+                          .dropna(how="all"))
+        df_vert = (wide_v.stack().rename("Spread").reset_index()
+                              .assign(Vertice=lambda x: x["Vertice"].astype(int)))
+
+    # ═════ 1) LINHA (Plotly) ══════════════════════════════════════════════
+    pares     = sorted(df_melt["Tipo"].unique())
+    media_lbl = "Média dos Spreads"
+    opcoes    = [media_lbl] + pares
+
+    selecionados = st.sidebar.multiselect(
+        "Vértices para a linha", opcoes, default=[media_lbl])
+
+    # monta DataFrame com médias + pares escolhidos
+    dfs = []
+    if media_lbl in selecionados:
+        df_media = (df_melt[df_melt["Tipo"] != "Spread B25/DAP25"]
+                    .groupby("DATA", as_index=False)["Spread"].mean()
+                    .assign(Tipo=media_lbl, Color="#000000"))
+        df_media["Data_Str"] = df_media["DATA"].dt.strftime("%Y-%m-%d")
+        dfs.append(df_media)
+
+    for par in selecionados:
+        if par != media_lbl:
+            dfs.append(df_melt[df_melt["Tipo"] == par])
+
+    df_plot = pd.concat(dfs, ignore_index=True)
+
+    fig_line = go.Figure()
+    for tipo, grp in df_plot.groupby("Tipo"):
+        pontos = len(grp)
+        text   = ['' if i % 5 else f'{v:.2f}' for i, v in enumerate(grp["Spread"])] \
+                 if len(selecionados) == 1 else None
+        modo   = "lines+markers+text" if text else "lines+markers"
+
+        fig_line.add_trace(go.Scatter(
+            x=grp["Data_Str"], y=grp["Spread"],
+            mode=modo, text=text, textposition="top center",
+            marker=dict(color=grp["Color"].iloc[0], size=6),
+            name=tipo))
+
+    fig_line.update_layout(
+        title="Spreads NTNB × DAP – evolução temporal",
+        xaxis_title="Data", yaxis_title="Spread (p.p.)",
+        plot_bgcolor="white", height=450, legend_title_text="")
+
+    st.plotly_chart(fig_line, use_container_width=True)
+
+    # ═════ 2) BARRAS (Plotly) ═════════════════════════════════════════════
+    with st.sidebar:
+        st.write('---')
+        st.markdown("#### Spread × Vértice")
+
+        agg_opt = st.radio(
+            "Base de cálculo",
+            ["Diário", "Mediana Semanal", "Mediana Mensal"],
+            0, key="hs_bar_agg")
+
+    ordem   = ["25", "26", "27", "28", "30", "32", "35", "40"]
+    df_base = df_vert_full.copy()
+
+    if agg_opt != "Diário":
+        rule = "W" if agg_opt == "Mediana Semanal" else "M"
+        df_base = (df_base.pivot(index="DATA", columns="Vertice", values="Spread")
+                            .resample(rule, label="right", closed="right")
+                            .median()
+                            .stack()
+                            .rename("Spread")
+                            .reset_index())
+
+    datas_disp = sorted(df_base["DATA"].dt.date.unique())
+
+    with st.sidebar:
+        if agg_opt == "Diário":
+            data_ref = st.date_input("Data de referência",
+                                     value=datas_disp[-1],
+                                     min_value=datas_disp[0],
+                                     max_value=datas_disp[-1],
+                                     key="hs_bar_refdate")
+        else:
+            rotulo   = "Semana" if agg_opt == "Mediana Semanal" else "Mês"
+            data_ref = st.selectbox(f"{rotulo} de referência",
+                                    datas_disp,
+                                    index=len(datas_disp) - 1,
+                                    key="hs_bar_refsel")
+
+    df_sel     = df_base[df_base["DATA"].dt.date == data_ref]
+    spread_map = dict(zip(df_sel["Vertice"].astype(str), df_sel["Spread"]))
+    y_vals     = [spread_map.get(v, None) for v in ordem]
+    text_vals  = [f"{v:.2f}" if v is not None else "" for v in y_vals]
+
+    fig_bar = go.Figure(go.Bar(
+        x=ordem, y=y_vals,
+        text=text_vals, textposition="outside",
+        marker_color="#1F4E79"))
+
+    fig_bar.update_layout(
+        title=f"Spreads por Vértice – {data_ref:%d/%m/%Y}",
+        xaxis=dict(title="Vértice (anos)", type="category"),
+        yaxis=dict(title="Spread (p.p.)"),
+        plot_bgcolor="white", height=550, showlegend=False)
+
+    st.plotly_chart(fig_bar, use_container_width=True)
+
 
 ###############################################################################
 # (Demais funções utilitárias, CSS e main() seguem SEM alterações relevantes,
@@ -782,11 +1008,13 @@ if __name__ == "__main__":
     df_div1 = process_div01()
 
     st.sidebar.title("Escolha a visão")
-    modo = st.sidebar.radio("Modo de análise", ["Analisar Ativo", "Analisar Fundo", "Análise Geral"], index=0)
+    modo = st.sidebar.radio("Modo de análise", ["Analisar Ativo", "Analisar Fundo", "Análise Geral","Analisar Spreads"], index=0)
 
     if modo == "Analisar Ativo":
         analisar_ativo(df_master, df_div1)  # assinatura original aceita apenas 2 args
     elif modo == "Analisar Fundo":
         analisar_fundo(df_master, df_div1)
-    else:
+    elif modo == "Análise Geral":
         analisar_geral(df_master, df_div1)
+    else:
+        analisar_spreads()
