@@ -136,7 +136,7 @@ def scrape_rate(driver: uc.Chrome, url: str, max_try: int = 10) -> float:
         if attempt < 2:
             driver.get(url)
             # espera o carregamento inicial (mantive sua folga extra)
-            time.sleep(3)
+            time.sleep(5)
         else:
             driver.get(url)
             time.sleep(5)
