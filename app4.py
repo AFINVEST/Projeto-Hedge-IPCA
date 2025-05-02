@@ -984,14 +984,16 @@ def analisar_spreads_por_fundo(df_posicao_juros: pd.DataFrame):
     pesos = (df_posicao_juros[df_posicao_juros["Fundo"].isin(fundos_sel)]
                .merge(df_lookup, on="Ativo", how="inner")
                .groupby("B_REF", as_index=False)["DIV1_ATIVO"].sum())
+    st.write(df_posicao_juros[df_posicao_juros["Fundo"].isin(fundos_sel)])
+    
     st.write(df_lookup,pesos)
-
     if pesos.empty:
         st.write("Nenhum ativo dos fundos escolhidos existe na planilha de spreads.")
         return
 
     pesos["peso"] = pesos["DIV1_ATIVO"] / pesos["DIV1_ATIVO"].sum()
     # dicionário  { 'B25':0.17 , 'B35':0.22 , ... }
+
     w = dict(zip(pesos["B_REF"], pesos["peso"]))
 
     # ══════════════ 2) OBTÉM SPREADS ORIGINAIS (já no session_state) ═══════
@@ -1078,6 +1080,7 @@ def analisar_spreads_por_fundo(df_posicao_juros: pd.DataFrame):
 
     # ══════════════ 7) BARRA POR VÉRTICE  (mesma data-ref da função original)═
     # Reutiliza df_vert_full já filtrado no intervalo
+    st.write(df_vert_full)
     df_vert = df_vert_full[
         df_vert_full["DATA"].dt.date.between(start_date, end_date)
     ].copy()
@@ -1093,6 +1096,8 @@ def analisar_spreads_por_fundo(df_posicao_juros: pd.DataFrame):
         df_vert = wide_v.assign(Vertice=lambda x: x["Vertice"].astype(int))
 
     # Sidebar – escolha do dia/semana/mês de referência
+    #Ver se esse gráfico faz sentido então
+    st.write('Ver se esse gráfico faz sentido')
     ordem = ["25","26","27","28","30","32","35","40"]
     df_base = df_vert
     datas_disp = sorted(df_base["DATA"].dt.date.unique())
