@@ -69,11 +69,11 @@ ASSETS: list[dict] = [
          url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=3417&codativo=CERT11"),
 
     # --------- ATIVOS CASUAIS (taxa informada manualmente) ----------------- (Manter ordem de DEB, CRI, CRA)
-    # dict(code_xp="ANET11", tab="DEB",
-    #     label="ANET11", rate_src="manual", rate=9.63),
+    #dict(code_xp="ECHP11", tab="DEB",
+    #     label="ECHP11", rate_src="manual", rate=8.1130),
 
-    # dict(code_xp="VERO13", tab="DEB",
-    #     label="VERO13", rate_src="manual", rate=9.3292),
+    #dict(code_xp="EQPA18", tab="DEB",
+    #     label="EQPA18", rate_src="manual", rate=7.7530),
 
     # dict(code_xp="CPLD29", tab="DEB",
     #     label="CPLD29", rate_src="manual", rate=7.6122),

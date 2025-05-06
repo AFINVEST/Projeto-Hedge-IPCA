@@ -143,7 +143,7 @@ def process_df() -> pd.DataFrame:
     """
     # --- Posição completa (sem filtros) --------------------------------------
     df_posicao_raw = pd.read_excel(
-        "Dados/Relatório de Posição 2025-04-30.xlsx", sheet_name="Worksheet"
+        "Dados/Relatório de Posição 2025-05-02.xlsx", sheet_name="Worksheet"
     )
     st.session_state["df_posicao_raw"] = df_posicao_raw.copy()
 
