@@ -138,7 +138,7 @@ def _prep_spread_df(path: str | PathLike) -> tuple[pd.DataFrame, pd.DataFrame]:
         • df_melt – longo, p/ gráfico em linha (Spread × Data)
         • df_vert – wide -> longo p/ gráfico Vertice × Spread (um dia)
     """
-    dados = pd.read_excel(path, sheet_name="Planilha2")
+    dados = pd.read_excel(path, sheet_name="Planilha4")
 
     # renomeia & filtra zeros
     cols = ['DATA','DAP25','DAP26','DAP27','DAP28','DAP30','DAP32','DAP35','DAP40',
@@ -1097,7 +1097,7 @@ def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
     base["SPREAD_PP"] = base["TAX_INDIC"] - base["NTNB_YIELD"]
     base["DATA_DATE"] = base["DATA"].dt.date  # col. auxiliar p/ comparações
 
-    # ═════ 2. GRÁFICO 1 – ATIVOS ═════════════════════════════════════════
+# ═════ 2. GRÁFICO 1 – ATIVOS ═════════════════════════════════════════
 # ──────────────────────────────────────────────────────────────────────────
 def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
     """
@@ -1106,6 +1106,32 @@ def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
     • Gráfico 3 – Série temporal do spread médio ponderado    – 1‑N fundos
     """
     st.header("Spreads Debêntures × NTNB‑B")
+     # NOVO ➌ – junta a base principal com os ativos SEM FUNDO
+    df_extras = st.session_state.get("df_extras", pd.DataFrame())
+    df_posicao = pd.concat([df_posicao, df_extras], ignore_index=True).copy()
+    def _spread_fundo_dia(df_dia: pd.DataFrame) -> float:
+        # ① média ponderada da TAX_INDIC em cada vértice
+        verts = (df_dia.groupby("B_REF")
+                       .apply(lambda g: pd.Series({
+                           "DIV1_SUM":  g["DIV1_ATIVO"].sum(),
+                           "TAX_POND":  np.average(g["TAX_INDIC"],
+                                                   weights=g["DIV1_ATIVO"])
+                       }))
+                       .reset_index())
+
+        # ② NTNB mais recente ≤ data‑ref
+        data_ref = df_dia["DATA_DATE"].iloc[0]
+        ntb_ref  = (nt_long[nt_long["DATA"].dt.date <= data_ref]
+                    .sort_values(["B_REF", "DATA"])
+                    .groupby("B_REF").tail(1)[["B_REF", "NTNB_YIELD"]])
+        verts = verts.merge(ntb_ref, on="B_REF", how="left")
+        verts["SPREAD_VERT"] = verts["TAX_POND"] - verts["NTNB_YIELD"]
+
+        # ③ resultado ponderado pelos DIV1_SUM de cada vértice
+        num = (verts["SPREAD_VERT"] * verts["DIV1_SUM"]).sum()
+        den = verts["DIV1_SUM"].sum()
+        return num / den if den else np.nan
+    # ----------------------------------------------------------------
 
     # ═════ 0. CARREGAS BÁSICAS ═══════════════════════════════════════════
     tx_hist = (
@@ -1135,7 +1161,9 @@ def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
 
     vertices_disp = sorted(nt_long["B_REF"].unique())
 
-    # ═════ 1. BASE GERAL COM SPREAD (para reutilizar) ════════════════════
+    # ═════ 1. BASE GERAL COM SPREAD (para reutilizar) ════════════════════ 
+    # ################################## PRECISO ADICIONAR UMA FORMA DE ANALISAR DUPLICIDADES COMO É FEITO NAS OUTRAS TELAS
+
     base0 = (
         df_posicao[["Ativo", "Fundo","DIV1_ATIVO"]]
         .merge(lk, on="Ativo", how="left")
@@ -1197,6 +1225,7 @@ def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
 
         #Checkbox para mostrar tabela com os dados do gráfico
         if st.checkbox("Mostrar tabela com dados do gráfico", key="chk_g1_data"):
+            st.dataframe(df_plot)
             st.dataframe(
                 df_plot[["DATA","Ativo","B_REF","SPREAD_PP"]]
                     .drop_duplicates()
@@ -1260,42 +1289,40 @@ def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
         st.subheader("Gráfico 3 – Evolução do spread médio ponderado")
 
         fundos_sel = st.sidebar.multiselect("Fundos para o Gráfico 3:",
-                                            fundos_disp, default=[fundos_disp[0]])
-
+                                            fundos_disp,
+                                            default=[fundos_disp[0]])
         if not fundos_sel:
             st.info("Selecione pelo menos um fundo para o Gráfico 3.")
             return
 
         fig3 = go.Figure()
-        for f in fundos_sel:
-            df_fund = base[base["Fundo"] == f].copy()
-            serie = (df_fund.groupby("DATA_DATE")
-                            .apply(lambda g: np.average(g["SPREAD_PP"],
-                                                         weights=g["DIV1_ATIVO"]))
-                            .reset_index(name="SPREAD_POND"))
+        for fundo in fundos_sel:
+            df_fund = base[base["Fundo"] == fundo].copy()
+
+            # ▼ NOVA série usando _spread_fundo_dia ▼
+            serie = (df_fund.groupby("DATA_DATE", group_keys=False)
+                             .apply(_spread_fundo_dia)
+                             .reset_index(name="SPREAD_POND"))
+
             fig3.add_trace(go.Scatter(
                 x=serie["DATA_DATE"], y=serie["SPREAD_POND"],
-                mode="lines+markers",
-                name=f))
+                mode="lines+markers", name=fundo))
+
         fig3.update_layout(
             height=480, plot_bgcolor="white",
             xaxis_title="Data", yaxis_title="Spread (p.p.)")
         st.plotly_chart(fig3, use_container_width=True)
 
-        # Mostrar tabela resumida, se desejado
+        # (opção de mostrar tabela resumida)
         if st.checkbox("Mostrar série numérica (todos os fundos)"):
-            # junta todas as séries lado‑a‑lado
             big_tbl = None
-            for f in fundos_sel:
-                df_fund = base[base["Fundo"] == f].copy()
-                serie = (df_fund.groupby("DATA_DATE")
-                                .apply(lambda g: np.average(g["SPREAD_PP"],
-                                                             weights=g["DIV1_ATIVO"]))
-                                .rename(f))
+            for fundo in fundos_sel:
+                df_fund = base[base["Fundo"] == fundo].copy()
+                serie = (df_fund.groupby("DATA_DATE", group_keys=False)
+                                 .apply(_spread_fundo_dia)
+                                 .rename(fundo))
                 big_tbl = pd.concat([big_tbl, serie], axis=1)
             st.dataframe(big_tbl.style.format("{:.2f}"))
-            
-
 
     # ═════ 3. GRÁFICO 2 – MÉDIA POR VÉRTICE DO FUNDO ═════════════════════
     st.subheader("Gráfico – Média (Sem Ponderação) por Vértice do Fundo")
