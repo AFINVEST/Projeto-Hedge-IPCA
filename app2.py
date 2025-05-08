@@ -1382,12 +1382,15 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
     for atv, grp in df_plot.groupby("Ativo"):
         grp = grp.sort_values("DATA")
         fig.add_trace(go.Scatter(
-            x=grp["Data_Str"], y=grp["SPREAD_PP"],
+            x=grp["DATA"],                 # passa datetime, não string
+            y=grp["SPREAD_PP"],
             mode="lines+markers",
             name=f"{atv} (B {grp['B_REF'].iloc[0]})"))
+
     fig.update_layout(height=520, plot_bgcolor="white",
-                      xaxis_title="Data",
-                      yaxis_title="Spread (p.p.)")
+                    xaxis_title="Data",
+                    yaxis_title="Spread (p.p.)")
+    fig.update_xaxes(type="date", tickformat="%b %d")  # opcional: formata como “May 04”
     st.plotly_chart(fig, use_container_width=True)
 
     if st.checkbox("Mostrar tabela de calculos"):
