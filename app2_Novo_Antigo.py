@@ -22,55 +22,6 @@ from plotnine import (
 )
 
 from os import PathLike
-# utils_posicao.py  (adicione no topo do projeto ou ao fim do script)
-import pandas as pd, datetime as dt, os
-POS_FILE = "Dados/hist_posicoes_fundos.csv"
-
-def _hoje() -> str:
-    return dt.date.today().strftime("%Y-%m-%d")
-
-def carregar_hist() -> pd.DataFrame:
-    if os.path.exists(POS_FILE):
-        return pd.read_csv(POS_FILE)
-    # estrutura: Fundo • Ativo • lag • curr
-    return pd.DataFrame(columns=["Fundo","Ativo","lag","curr"])
-
-def salvar_posicao(df_fundo: pd.DataFrame) -> None:
-    """
-    Recebe DataFrame já filtrado para 1 fundo (colunas Fundo, Ativo, Quantidade).
-    Atualiza arquivo mantendo lag/curr.
-    """
-    hist   = carregar_hist()
-    fundo  = df_fundo["Fundo"].iloc[0]
-    hoje   = _hoje()
-
-    base   = df_fundo[["Fundo","Ativo","Quantidade"]].copy()
-    base.rename(columns={"Quantidade": "curr"}, inplace=True)
-    base["lag"] = None          # placeholder – já será preenchido do hist
-
-    # extrai linha antiga (dia anterior)
-    antigo = hist[hist["Fundo"] == fundo].copy()
-
-    # junta / atualiza lag
-    if not antigo.empty:
-        base = base.merge(antigo[["Fundo","Ativo","curr"]]
-                          .rename(columns={"curr":"lag"}),
-                          on=["Fundo","Ativo"], how="left")
-
-    # remove registros antigos desse fundo e inclui os novos
-    hist = hist[hist["Fundo"] != fundo]
-    hist = pd.concat([hist, base], ignore_index=True)
-    hist.to_csv(POS_FILE, index=False)
-
-def comparar_posicoes(fundo: str, ativos_atual: list[str]) -> dict[str,list[str]]:
-    """
-    Devolve {'faltando':[...], 'novos':[...]} comparando curr vs lag.
-    """
-    hist = carregar_hist()
-    ant  = hist[hist["Fundo"]==fundo]["Ativo"].tolist()
-    falt = sorted(list(set(ant) - set(ativos_atual)))
-    novos = sorted(list(set(ativos_atual) - set(ant)))
-    return {"faltando": falt, "novos": novos}
 
 
 ###############################################################################
@@ -138,7 +89,7 @@ def _prep_spread_df(path: str | PathLike) -> tuple[pd.DataFrame, pd.DataFrame]:
         • df_melt – longo, p/ gráfico em linha (Spread × Data)
         • df_vert – wide -> longo p/ gráfico Vertice × Spread (um dia)
     """
-    dados = pd.read_excel(path, sheet_name="Planilha4")
+    dados = pd.read_excel(path, sheet_name="Planilha2")
 
     # renomeia & filtra zeros
     cols = ['DATA','DAP25','DAP26','DAP27','DAP28','DAP30','DAP32','DAP35','DAP40',
@@ -169,7 +120,6 @@ def _prep_spread_df(path: str | PathLike) -> tuple[pd.DataFrame, pd.DataFrame]:
         'Spread B35/DAP35': '#e377c2',
         'Spread B40/DAP40': '#7f7f7f',
     }
-    
     df_melt["Color"] = df_melt["Tipo"].map(cores)
 
     # -------- DF para gráfico Spread (Y) × Vértice (X) -------- #
@@ -182,38 +132,6 @@ def _prep_spread_df(path: str | PathLike) -> tuple[pd.DataFrame, pd.DataFrame]:
         .assign(Vertice=lambda x: x["Vertice"].str[-2:].astype(int))  # 25,26,…
     )
     return df_melt, df_vert
-
-def _prep_ntnb_df(path: str | PathLike) -> pd.DataFrame:
-    """
-    DATA | B_REF | NTNB_YIELD   (DATA em datetime64[ns])
-    """
-    dados = pd.read_excel(path, sheet_name="Planilha4")
-
-    nt_cols = ['NTNB25','NTNB26','NTNB27','NTNB28',
-               'NTNB30','NTNB32','NTNB35','NTNB40']
-    dados = dados[['DATA'] + nt_cols].copy()
-    dados.columns = ['DATA'] + nt_cols
-
-    dados["DATA"] = pd.to_datetime(dados["DATA"])     # ← conversão explícita
-
-    nt_long = (dados
-        .melt(id_vars='DATA', var_name='NTNB', value_name='NTNB_YIELD')
-        .dropna()
-        .assign(B_REF=lambda x: x['NTNB'].str.replace('NTNB','B'))
-        .drop(columns='NTNB')
-        .sort_values(['B_REF','DATA'])
-    )
-    # Substitui zeros por NaN e faz forward fill por grupo de B_REF
-    nt_long['NTNB_YIELD'] = (
-        nt_long
-        .groupby('B_REF')['NTNB_YIELD']
-        .transform(lambda x: x.replace(0, np.nan).ffill())
-    )
-    return nt_long
-
-if "df_ntnb_long" not in st.session_state:
-    st.session_state["df_ntnb_long"] = _prep_ntnb_df("BBG - ECO DASH_te.xlsx")
-
 
 
 def process_df() -> pd.DataFrame:
@@ -363,96 +281,6 @@ def obter_dap_dict_original() -> Dict[int, str]:
 ###############################################################################
 # VISUALIZAÇÕES – ATUALIZAÇÃO PARA TRAZER DAP CARTEIRA
 ###############################################################################
-
-import pandas as pd, re, numpy as np
-from datetime import datetime
-
-_B_MAP = {   # = mesmo critério que você usa p/ DAPs
-    2025:'B25', 2026:'B26', 2027:'B27', 2028:'B28', 2029:'B29',
-    2030:'B30', 2031:'B30', 2032:'B32', 2033:'B32', 2034:'B35',
-    2035:'B35', 2036:'B35', 2037:'B35', 2038:'B40', 2039:'B40',
-    2040:'B40', 2041:'B40', 2042:'B40', 2043:'B40', 2044:'B40',
-}
-
-def _to_B_ref(s: str|float|pd.Timestamp) -> str|None:
-    """
-    ▸ Converte qualquer coisa que apareça na col. **B referência** para
-      formato canónico 'B25', 'B35', …  
-    ▸ Aceita:
-        • já estar como 'B35'
-        • string-data '15/05/2040'
-        • datetime / Timestamp
-    """
-    if pd.isna(s):               return None
-    txt = str(s).strip().upper()
-
-    m = re.fullmatch(r'B(\d{2})', txt)
-    if m:                        # já no formato correcto
-        return f'B{m.group(1)}'
-
-    # tenta parsear como data (dd/mm/yyyy, yyyy-mm-dd…)
-    data = pd.to_datetime(txt, dayfirst=True, errors='coerce')
-    if pd.notna(data):
-        ano  = data.year
-        return _B_MAP.get(ano)
-
-    return None                  # não conseguiu limpar
-
-
-def load_spreads_afinvest(path="Dados/spreads_afinvest.csv") -> pd.DataFrame:
-    df = pd.read_csv(path, sep=";").rename(columns=str.strip)
-    df["Ativo"]  = df["Ativo"].str.upper().str.strip()
-    df["B_REF"]  = df["B referência"].str.upper().str.strip()
-    return df[["Ativo","B_REF"]]
-
-
-def _div1_por_fundo(df_posicao: pd.DataFrame,
-                    df_lookup:  pd.DataFrame) -> pd.DataFrame:
-    """
-    ▸ junta posição (quantidade) + DIV_ONE e devolve:
-       Fundo | B_REF | DIV1_QTD
-       onde  DIV1_QTD = quantidade * DIV_ONE
-    """
-    base = (df_posicao.merge(df_lookup, on='Ativo', how='left')
-                      .dropna(subset=['B_REF']))          # fora o que não casar
-
-    base['DIV1_QTD'] = base['Quantidade'] * base['DIV_ONE']
-    return (base.groupby(['Fundo','B_REF'], as_index=False)
-                ['DIV1_QTD'].sum())
-
-def _ultimo_spread_por_B(df_melt: pd.DataFrame) -> pd.Series:
-    """
-    devolve Series  •index=B_REF  •value=spread mais recente
-    """
-    ult_dia = df_melt['DATA'].max()
-    ult     = df_melt[df_melt['DATA']==ult_dia].copy()
-
-    ult['B_REF'] = ult['Tipo'].str.extract(r'B(\d{2})').radd('B')
-    return ult.set_index('B_REF')['Spread']
-
-def _spread_medio_por_fundo(df_posicao: pd.DataFrame,
-                            df_spreads : pd.DataFrame) -> pd.DataFrame:
-    """
-    df_posicao precisa conter:
-        • Fundo, Ativo, DIV1_ATIVO  (já calculado no seu df_merged)
-
-    Retorna:
-        Fundo | SPREAD_MEDIO_BPS
-    """
-    base = (df_posicao[["Fundo","Ativo","DIV1_ATIVO"]]
-                .merge(df_spreads, on="Ativo", how="inner"))
-    st.write(base)
-
-    # remove itens sem DV01 (caso zero / NaN)
-    base = base[base["DIV1_ATIVO"] != 0]
-
-    res = (base.groupby("Fundo")
-                .apply(lambda g: np.average(g["SPREAD_BPS"],
-                                             weights=g["DIV1_ATIVO"]))
-                .reset_index(name="SPREAD_MEDIO_BPS"))
-
-    return res.sort_values("SPREAD_MEDIO_BPS")
-
 
 
 def check_duplicates(df: pd.DataFrame, label: str):
@@ -711,18 +539,9 @@ def analisar_ativo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
 
 def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
-    #ADICIONAR NESSA FUNÇÃO UMA FORMA DE LER OS ATIVOS PRESENTES NO FUNDO NO RELATÓRIO DE POSIÇÃO DO DIA ANTERIOR E AVISAR PARA O USUÁRIO SE TIVER ALGUM ATIVO QUE NÃO ESTEJA NA BASE ATUAL OU NÃO ANTIGA
-    # ALIAS, PARA FAZER ISSO VOU CRIAR UMA NOVA TABELA EM CSV QUE VAI MAPEAR AS POSIÇÕES QUE ESTÃO SENDO FILTRADAS PRA CADA FUNDO E SALVAR O FUNDO, ATIVO, QUANTIDADE DE CADA FUNDO E SEMPRE QUE TIVER ALGUMA ANALISE DE FUNDO OLHAR ESSA TABELA PARA BUSCAR DIFERENÇAS
-
     st.header("Analisar Fundo")
     fundo_sel = st.sidebar.selectbox("Selecione o fundo:", sorted(df["Fundo"].unique()))
     df_fundo = df[df["Fundo"] == fundo_sel].copy()
-     # ————————————————— AVISO DE DIFERENÇAS ————————————————— #
-    diffs = comparar_posicoes(fundo_sel, df_fundo["Ativo"].unique().tolist())
-    if diffs["faltando"]:
-        st.warning(f"❌ Ativos presentes ontem mas AUSENTES hoje: {', '.join(diffs['faltando'])}")
-    if diffs["novos"]:
-        st.info   (f"➕ Ativos NOVOS hoje (não constavam ontem): {', '.join(diffs['novos'])}")
 
     # Filtro de ativos internos ------------------------------------------------
     ativos_fundo = sorted(df_fundo["Ativo"].unique())
@@ -766,6 +585,7 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
             # dados["Fundo"] = fundo_sel                    # destino final
             df_fundo = pd.concat([df_fundo, dados], ignore_index=True)
+
     # Simulador de quantidades -------------------------------------------------
     if ativos_filt:
         st.sidebar.markdown("### Simular novas quantidades")
@@ -818,8 +638,6 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
     plot_relacao_juros(df_fundo)
     df_contr = plot_div1_layout(df_fundo, df_div1, carteira_fundo)
     atualizar_session_state_contratos(fundo_sel, df_contr)
-    salvar_posicao(df_fundo)  
-
 
     # … (opção de mostrar base do fundo permanece)
 
@@ -1037,541 +855,6 @@ def analisar_spreads() -> None:
     st.plotly_chart(fig_bar, use_container_width=True)
 
 
-import plotly.graph_objects as go
-from typing import List
-# ──────────────────────────────────────────────────────────────────────────
-def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
-    """
-    • Gráfico 1 – Spread por ativo (linha)                    – opcional
-    • Gráfico 2 – Spread médio ponderado por vértice/fundo    – opcional
-    • Gráfico 3 – Série temporal do spread médio ponderado    – 1‑N fundos
-    """
-    st.header("Spreads Debêntures × NTNB‑B")
-
-    # ═════ 0. CARREGAS BÁSICAS ═══════════════════════════════════════════
-    tx_hist = (
-        pd.read_csv("Dados/dados_ativos (01_01_2025-29_04_2025).csv")
-          .rename(columns={"position_date": "DATA",
-                           "ativo": "Ativo",
-                           "tax": "TAX_INDIC"})
-    )
-    tx_hist["Ativo"]      = tx_hist["Ativo"].str.upper().str.strip()
-    tx_hist["DATA"]       = pd.to_datetime(tx_hist["DATA"], errors="coerce")
-    tx_hist["TAX_INDIC"]  = pd.to_numeric(tx_hist["TAX_INDIC"], errors="coerce")
-    tx_hist.dropna(subset=["DATA", "TAX_INDIC"], inplace=True)
-
-    if "df_spreads_af" not in st.session_state:
-        st.session_state["df_spreads_af"] = load_spreads_afinvest()
-    lk = st.session_state["df_spreads_af"]
-
-    if "df_ntnb_long" not in st.session_state:
-        st.session_state["df_ntnb_long"] = _prep_ntnb_df("BBG - ECO DASH_te.xlsx")
-
-    st.write(st.session_state["df_ntnb_long"])
-    
-    nt_long = st.session_state["df_ntnb_long"].copy()
-    nt_long["DATA"]        = pd.to_datetime(nt_long["DATA"], errors="coerce")
-    nt_long["NTNB_YIELD"]  = pd.to_numeric(nt_long["NTNB_YIELD"], errors="coerce")
-    nt_long.dropna(subset=["DATA", "NTNB_YIELD"], inplace=True)
-
-    vertices_disp = sorted(nt_long["B_REF"].unique())
-
-    # ═════ 1. BASE GERAL COM SPREAD (para reutilizar) ════════════════════
-    base0 = (
-        df_posicao[["Ativo", "Fundo","DIV1_ATIVO"]]
-        .merge(lk, on="Ativo", how="left")
-        .merge(tx_hist, on="Ativo", how="left")
-        .dropna(subset=["B_REF", "DATA", "TAX_INDIC"])
-    )
-
-    # merge_asof por vértice
-    frames = []
-    for b, left in base0.groupby("B_REF", sort=True):
-        right = nt_long[nt_long["B_REF"] == b][["DATA", "NTNB_YIELD"]].sort_values("DATA")
-        joined = pd.merge_asof(left.sort_values("DATA"), right,
-                               on="DATA", direction="backward")
-        frames.append(joined)
-    base = (pd.concat(frames, ignore_index=True)
-              .dropna(subset=["NTNB_YIELD"]))
-
-    base["SPREAD_PP"] = base["TAX_INDIC"] - base["NTNB_YIELD"]
-    base["DATA_DATE"] = base["DATA"].dt.date  # col. auxiliar p/ comparações
-
-# ═════ 2. GRÁFICO 1 – ATIVOS ═════════════════════════════════════════
-# ──────────────────────────────────────────────────────────────────────────
-def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
-    """
-    • Gráfico 1 – Spread por ativo (linha)                    – opcional
-    • Gráfico 2 – Spread médio ponderado por vértice/fundo    – opcional
-    • Gráfico 3 – Série temporal do spread médio ponderado    – 1‑N fundos
-    """
-    st.header("Spreads Debêntures × NTNB‑B")
-     # NOVO ➌ – junta a base principal com os ativos SEM FUNDO
-    df_extras = st.session_state.get("df_extras", pd.DataFrame())
-    df_posicao = pd.concat([df_posicao, df_extras], ignore_index=True).copy()
-    def _spread_fundo_dia(df_dia: pd.DataFrame) -> float:
-        # ① média ponderada da TAX_INDIC em cada vértice
-        verts = (df_dia.groupby("B_REF")
-                       .apply(lambda g: pd.Series({
-                           "DIV1_SUM":  g["DIV1_ATIVO"].sum(),
-                           "TAX_POND":  np.average(g["TAX_INDIC"],
-                                                   weights=g["DIV1_ATIVO"])
-                       }))
-                       .reset_index())
-
-        # ② NTNB mais recente ≤ data‑ref
-        data_ref = df_dia["DATA_DATE"].iloc[0]
-        ntb_ref  = (nt_long[nt_long["DATA"].dt.date <= data_ref]
-                    .sort_values(["B_REF", "DATA"])
-                    .groupby("B_REF").tail(1)[["B_REF", "NTNB_YIELD"]])
-        verts = verts.merge(ntb_ref, on="B_REF", how="left")
-        verts["SPREAD_VERT"] = verts["TAX_POND"] - verts["NTNB_YIELD"]
-
-        # ③ resultado ponderado pelos DIV1_SUM de cada vértice
-        num = (verts["SPREAD_VERT"] * verts["DIV1_SUM"]).sum()
-        den = verts["DIV1_SUM"].sum()
-        return num / den if den else np.nan
-    # ----------------------------------------------------------------
-
-    # ═════ 0. CARREGAS BÁSICAS ═══════════════════════════════════════════
-    tx_hist = (
-        pd.read_csv("Dados/dados_ativos (01_01_2025-29_04_2025).csv")
-          .rename(columns={"position_date": "DATA",
-                           "ativo": "Ativo",
-                           "tax": "TAX_INDIC"})
-    )
-    tx_hist["Ativo"]      = tx_hist["Ativo"].str.upper().str.strip()
-    tx_hist["DATA"]       = pd.to_datetime(tx_hist["DATA"], errors="coerce")
-    tx_hist["TAX_INDIC"]  = pd.to_numeric(tx_hist["TAX_INDIC"], errors="coerce")
-    tx_hist.dropna(subset=["DATA", "TAX_INDIC"], inplace=True)
-
-    if "df_spreads_af" not in st.session_state:
-        st.session_state["df_spreads_af"] = load_spreads_afinvest()
-    lk = st.session_state["df_spreads_af"]
-
-    if "df_ntnb_long" not in st.session_state:
-        st.session_state["df_ntnb_long"] = _prep_ntnb_df("BBG - ECO DASH_te.xlsx")
-
-    #st.write(st.session_state["df_ntnb_long"])
-    
-    nt_long = st.session_state["df_ntnb_long"].copy()
-    nt_long["DATA"]        = pd.to_datetime(nt_long["DATA"], errors="coerce")
-    nt_long["NTNB_YIELD"]  = pd.to_numeric(nt_long["NTNB_YIELD"], errors="coerce")
-    nt_long.dropna(subset=["DATA", "NTNB_YIELD"], inplace=True)
-
-    vertices_disp = sorted(nt_long["B_REF"].unique())
-
-    # ═════ 1. BASE GERAL COM SPREAD (para reutilizar) ════════════════════ 
-    # ################################## PRECISO ADICIONAR UMA FORMA DE ANALISAR DUPLICIDADES COMO É FEITO NAS OUTRAS TELAS
-
-    base0 = (
-        df_posicao[["Ativo", "Fundo","DIV1_ATIVO"]]
-        .merge(lk, on="Ativo", how="left")
-        .merge(tx_hist, on="Ativo", how="left")
-        .dropna(subset=["B_REF", "DATA", "TAX_INDIC"])
-    )
-
-    # merge_asof por vértice
-    frames = []
-    for b, left in base0.groupby("B_REF", sort=True):
-        right = nt_long[nt_long["B_REF"] == b][["DATA", "NTNB_YIELD"]].sort_values("DATA")
-        joined = pd.merge_asof(left.sort_values("DATA"), right,
-                               on="DATA", direction="backward")
-        frames.append(joined)
-    base = (pd.concat(frames, ignore_index=True)
-              .dropna(subset=["NTNB_YIELD"]))
-
-    base["SPREAD_PP"] = base["TAX_INDIC"] - base["NTNB_YIELD"]
-    base["DATA_DATE"] = base["DATA"].dt.date  # col. auxiliar p/ comparações
-
-    # ======================================================================
-    # CONTROLES GERAIS DE VISUALIZAÇÃO
-    # ======================================================================
-    st.sidebar.markdown("### O que exibir?")
-    show_g1 = st.sidebar.checkbox("Gráfico 1 – Ativos", value=True)
-    show_g2 = st.sidebar.checkbox("Gráfico 2 – Vértices do fundo", value=True)
-    show_g3 = st.sidebar.checkbox("Gráfico 3 – Série por fundo(s)", value=True)
-
-    # Lista de fundos disponível – usada nos dois últimos gráficos
-    fundos_disp = sorted(base["Fundo"].unique())
-
-    # ───────────────── 1. GRÁFICO 1 – SPREAD POR ATIVO ─────────────────────
-    if show_g1:
-        st.subheader("Gráfico 1 – Spread por Ativo")
-        ativos_disp = sorted(base["Ativo"].unique())
-        ativos_sel  = st.sidebar.multiselect("Ativos:", ativos_disp,
-                                             default=ativos_disp[:1])
-
-        df_plot = (base[base["Ativo"].isin(ativos_sel)]
-                   .assign(Data_Str=lambda x: x["DATA"].dt.strftime("%Y‑%m‑%d")))
-
-        #col_g1, col_tbl1 = st.columns([3, 2])
-        #with col_g1:
-        fig = go.Figure()
-        for atv, grp in df_plot.groupby("Ativo"):
-            grp = grp.sort_values("DATA")
-            fig.add_trace(go.Scatter(
-                x=grp["Data_Str"], y=grp["SPREAD_PP"],
-                mode="lines+markers",
-                name=f"{atv} (B {grp['B_REF'].iloc[0]})"))
-        fig.update_layout(height=520, plot_bgcolor="white",
-                            xaxis_title="Data", yaxis_title="Spread (p.p.)")
-        st.plotly_chart(fig, use_container_width=True)
-
-        #with col_tbl1:
-        #    st.dataframe(df_plot[["DATA","Ativo","B_REF","SPREAD_PP"]]
-        #                 .sort_values("DATA")
-        #                 .style.format({"SPREAD_PP":"{:.2f}"}))
-
-        #Checkbox para mostrar tabela com os dados do gráfico
-        if st.checkbox("Mostrar tabela com dados do gráfico", key="chk_g1_data"):
-            st.dataframe(df_plot)
-            st.dataframe(
-                df_plot[["DATA","Ativo","B_REF","SPREAD_PP"]]
-                    .drop_duplicates()
-                    .sort_values("DATA")
-                    .style.format({"SPREAD_PP": "{:.2f}"})   # ← corrigido
-            )
-
-    # ───────────────── 2. GRÁFICO 2 – VÉRTICE / FUNDO ──────────────────────
-    if show_g2:
-        st.subheader("Gráfico 2 – Spread médio ponderado por vértice")
-
-        fundo_sel = st.sidebar.selectbox("Fundo (para o Gráfico 2):",
-                                         fundos_disp)
-        datas_fundo = sorted(base[base["Fundo"] == fundo_sel]["DATA_DATE"].unique())
-        data_ref = st.sidebar.date_input("Data‑ref:",
-                                         value=datas_fundo[-1],
-                                         min_value=datas_fundo[0],
-                                         max_value=datas_fundo[-1])
-
-        df_ref = base[(base["Fundo"] == fundo_sel) &
-                      (base["DATA_DATE"] == data_ref)].copy()
-        if df_ref.empty:
-            st.info("Fundo sem ativos nessa data.")
-        else:
-            medias = (df_ref.groupby("B_REF")
-                      .apply(lambda g: np.average(g["TAX_INDIC"],
-                                                  weights=g["DIV1_ATIVO"]))
-                      .reset_index(name="TAX_POND"))
-            pesos  = df_ref.groupby("B_REF")["DIV1_ATIVO"].sum().reset_index()
-            ntb_lookup = (nt_long[nt_long["DATA"].dt.date <= data_ref]
-                          .sort_values(["B_REF","DATA"])
-                          .groupby("B_REF").tail(1)
-                          .loc[:, ["B_REF","NTNB_YIELD"]])
-
-            df_vert = (medias.merge(ntb_lookup,on="B_REF",how="left")
-                              .merge(pesos,on="B_REF",how="left"))
-            df_vert["SPREAD_PP"] = df_vert["TAX_POND"] - df_vert["NTNB_YIELD"]
-
-            col_g2, col_tbl2 = st.columns([3, 2])
-            with col_g2:
-                fig2 = go.Figure(go.Bar(
-                    x=df_vert["B_REF"], y=df_vert["SPREAD_PP"],
-                    text=[f"{v:.2f}" if pd.notna(v) else "" for v in df_vert["SPREAD_PP"]],
-                    textposition="outside", marker_color="#1F4E79"))
-                fig2.update_layout(
-                    title=f"{fundo_sel} – Spread ponderado ({data_ref})",
-                    xaxis_title="Vértice (B)", yaxis_title="Spread (p.p.)",
-                    height=520, plot_bgcolor="white")
-                st.plotly_chart(fig2, use_container_width=True)
-
-            with col_tbl2:
-                st.table(
-                    df_vert.set_index('B_REF').rename(columns={"DIV1_ATIVO":"Σ DIV1"})
-                           .style.format({"TAX_POND":"{:.4f}",
-                                          "NTNB_YIELD":"{:.4f}",
-                                          "SPREAD_PP":"{:.2f}",
-                                          "Σ DIV1":"{:.0f}"}))
-
-    # ───────────────── 3. GRÁFICO 3 – SÉRIE 1‑N FUNDOS ────────────────────
-    if show_g3:
-        st.subheader("Gráfico 3 – Evolução do spread médio ponderado")
-
-        fundos_sel = st.sidebar.multiselect("Fundos para o Gráfico 3:",
-                                            fundos_disp,
-                                            default=[fundos_disp[0]])
-        if not fundos_sel:
-            st.info("Selecione pelo menos um fundo para o Gráfico 3.")
-            return
-
-        fig3 = go.Figure()
-        for fundo in fundos_sel:
-            df_fund = base[base["Fundo"] == fundo].copy()
-
-            # ▼ NOVA série usando _spread_fundo_dia ▼
-            serie = (df_fund.groupby("DATA_DATE", group_keys=False)
-                             .apply(_spread_fundo_dia)
-                             .reset_index(name="SPREAD_POND"))
-
-            fig3.add_trace(go.Scatter(
-                x=serie["DATA_DATE"], y=serie["SPREAD_POND"],
-                mode="lines+markers", name=fundo))
-
-        fig3.update_layout(
-            height=480, plot_bgcolor="white",
-            xaxis_title="Data", yaxis_title="Spread (p.p.)")
-        st.plotly_chart(fig3, use_container_width=True)
-
-        # (opção de mostrar tabela resumida)
-        if st.checkbox("Mostrar série numérica (todos os fundos)"):
-            big_tbl = None
-            for fundo in fundos_sel:
-                df_fund = base[base["Fundo"] == fundo].copy()
-                serie = (df_fund.groupby("DATA_DATE", group_keys=False)
-                                 .apply(_spread_fundo_dia)
-                                 .rename(fundo))
-                big_tbl = pd.concat([big_tbl, serie], axis=1)
-            st.dataframe(big_tbl.style.format("{:.2f}"))
-
-    # ═════ 3. GRÁFICO 2 – MÉDIA POR VÉRTICE DO FUNDO ═════════════════════
-    st.subheader("Gráfico – Média (Sem Ponderação) por Vértice do Fundo")
-    
-    df_ref = base[(base["Fundo"] == fundo_sel) &
-                  (base["DATA_DATE"] == data_ref)]
-    
-    #st.write(df_ref)
-
-    if df_ref.empty:
-        st.info("Fundo sem ativos nessa data."); return
-
-    medias = (df_ref.groupby("B_REF", as_index=False)["TAX_INDIC"].mean()
-                      .rename(columns={"TAX_INDIC": "TAX_MEAN"}))
-
-    # Junta NTNB (último pregão <= data_ref)
-    # ── médias por vértice (dict para evitar Series vazios) ─────────────
-    tax_dict = (df_ref.groupby("B_REF")["TAX_INDIC"]
-                        .mean()
-                        .to_dict())                 # ex.: {'B25': 5.23, ...}
-
-    #Somar os Div1_ATIVO por B_REF para cada fundo
-    pesos_dict = df_ref.groupby("B_REF")["DIV1_ATIVO"].sum().reset_index()
-    #st.write(pesos_dict)
-    
-    rows = []
-    for b in vertices_disp:                         # garante todos os vértices
-        taxa_mean = tax_dict.get(b, None)
-
-        ntb = nt_long[(nt_long["B_REF"] == b) &
-                       (nt_long["DATA"].dt.date <= data_ref)]
-        ntb_y = ntb.iloc[-1]["NTNB_YIELD"] if not ntb.empty else None
-
-        spread = (taxa_mean - ntb_y
-                  if pd.notna(taxa_mean) and pd.notna(ntb_y) else None)
-
-        rows.append({"B_REF": b,
-                     "TAX_MEAN": taxa_mean,
-                     "NTNB_YIELD": ntb_y,
-                     "SPREAD_PP": spread})
-
-    df_vert = pd.DataFrame(rows)
-
-    # gráfico de barras
-    fig2 = go.Figure(go.Bar(
-        x=df_vert["B_REF"],
-        y=df_vert["SPREAD_PP"],
-        text=[f"{v:.2f}" if pd.notna(v) else "" for v in df_vert["SPREAD_PP"]],
-        textposition="outside",
-        marker_color="#1F4E79"))
-    fig2.update_layout(
-        title=f"{fundo_sel} – Spread Médio por Vértice ({data_ref})",
-        xaxis_title="Vértice (B)",
-        yaxis_title="Spread (p.p.)",
-        height=550, plot_bgcolor="white")
-    st.plotly_chart(fig2, use_container_width=True)
-
-    # tabela
-    st.dataframe(
-        df_vert.style.format({"TAX_MEAN":"{:.4f}",
-                              "NTNB_YIELD":"{:.4f}",
-                              "SPREAD_PP":"{:.2f}"})
-    )
-
-def analisar_spreads_por_fundo(df_posicao_juros: pd.DataFrame):
-    """
-    • Calcula pesos =  Σ DIV1_ATIVO por B_REF dentro do(s) fundo(s)
-    • Aplica esses pesos aos spreads B/DAP (df_spread_melt e df_spread_vert)
-    • Reproduz a mesma UI de 'analisar_spreads', mas já ponderada
-    """
-    st.subheader("Análise – Spreads ponderados por Fundo")
-
-    # ══════════════ 0) ESCOLHA DE FUNDOS ═══════════════════════════════════
-    fundos_disp = sorted(df_posicao_juros["Fundo"].unique())
-    fundos_sel  = st.sidebar.multiselect("Fundos:", fundos_disp, default=fundos_disp)
-    if not fundos_sel:
-        st.warning("Selecione ao menos um fundo.")
-        return
-
-    # ══════════════ 1) PESOS DIV1 POR B_REF ════════════════════════════════
-    # precisa do lookup (Ativo → B_REF)
-    if "df_spreads_af" not in st.session_state:
-        st.session_state["df_spreads_af"] = load_spreads_afinvest()
-    df_lookup = st.session_state["df_spreads_af"][["Ativo","B_REF"]]
-
-    pesos = (df_posicao_juros[df_posicao_juros["Fundo"].isin(fundos_sel)]
-               .merge(df_lookup, on="Ativo", how="inner")
-               .groupby("B_REF", as_index=False)["DIV1_ATIVO"].sum())
-    st.write(df_posicao_juros[df_posicao_juros["Fundo"].isin(fundos_sel)])
-    
-    st.write(df_lookup,pesos)
-    if pesos.empty:
-        st.write("Nenhum ativo dos fundos escolhidos existe na planilha de spreads.")
-        return
-
-    pesos["peso"] = pesos["DIV1_ATIVO"] / pesos["DIV1_ATIVO"].sum()
-    # dicionário  { 'B25':0.17 , 'B35':0.22 , ... }
-
-    w = dict(zip(pesos["B_REF"], pesos["peso"]))
-
-    # ══════════════ 2) OBTÉM SPREADS ORIGINAIS (já no session_state) ═══════
-    if "df_spread_melt" not in st.session_state:
-        dfm, dfv = _prep_spread_df("BBG - ECO DASH_te.xlsx")
-        st.session_state["df_spread_melt"] = dfm
-        st.session_state["df_spread_vert"] = dfv
-
-    df_melt_full = st.session_state["df_spread_melt"].copy()
-    df_vert_full = st.session_state["df_spread_vert"].copy()
-
-    # Apenas vértices que têm peso
-    padrao = "|".join(sorted(w))                       # ex.: 'B25|B30|B35'
-    df_melt_full = df_melt_full[
-        df_melt_full["Tipo"].str.contains(padrao)
-    ]
-    df_vert_full = df_vert_full[
-        df_vert_full["Vertice"].astype(str).isin([b[1:] for b in w])
-    ]
-
-    # ══════════════ 3) SIDEBAR (igual à função original) ═══════════════════
-    with st.sidebar:
-        st.write("---")
-        st.markdown("## Filtros – Spreads ponderados")
-        # ── se não sobrou nenhum spread depois do filtro ‘padrao’
-        if df_melt_full.empty:
-            st.warning("Não há spreads para os vértices presentes nos fundos selecionados.")
-            return
-
-        min_date = df_melt_full["DATA"].min().date()
-        max_date = df_melt_full["DATA"].max().date()
-
-
-        col1, col2 = st.columns(2)
-        start_date = col1.date_input("Início",  min_value=min_date,
-                                     max_value=max_date, value=min_date)
-        end_date   = col2.date_input("Fim",     min_value=min_date,
-                                     max_value=max_date, value=max_date)
-
-        freq_map = {"Diária":"D", "Semanal":"W", "Mensal":"M"}
-        freq     = st.selectbox("Frequência", list(freq_map), 0)
-
-    if start_date > end_date:
-        st.warning("A data inicial é posterior à final – ajuste o intervalo.")
-        return
-
-    # ══════════════ 4) FILTRO DE PERÍODO & REAMOSTRAGEM ════════════════════
-    mask = df_melt_full["DATA"].dt.date.between(start_date, end_date)
-    df_melt = df_melt_full[mask].copy()
-
-    if freq != "Diária":
-        rule = freq_map[freq]
-        wide = (df_melt.pivot(index="DATA", columns="Tipo", values="Spread")
-                        .resample(rule, label="right", closed="right")
-                        .median()
-                        .dropna(how="all"))
-        df_melt = (wide.stack().rename("Spread").reset_index())
-        df_melt["Data_Str"] = df_melt["DATA"].dt.strftime("%Y-%m-%d")
-
-    # ══════════════ 5)  CÁLCULO DO SPREAD PONDERADO ════════════════════════
-    #   5.1  extrai label 'B25' do campo 'Tipo' (Spread B25/DAP25)
-    df_melt["B_REF"] = df_melt["Tipo"].str.extract(r"(B\d{2})")
-    #   5.2  aplica peso
-    df_melt["PESO"]  = df_melt["B_REF"].map(w)
-    df_melt["Spread_Pond"] = df_melt["Spread"] * df_melt["PESO"]
-
-    #   5.3  série agregada
-    serie = (df_melt.groupby("DATA", as_index=False)["Spread_Pond"].sum()
-                     .assign(Data_Str=lambda x: x["DATA"].dt.strftime("%Y-%m-%d")))
-
-    # ══════════════ 6) GRÁFICO DE LINHA (unica curva) ══════════════════════
-    fig_line = go.Figure(go.Scatter(
-        x=serie["Data_Str"], y=serie["Spread_Pond"],
-        mode="lines+markers+text",
-        text=[f"{v:.2f}" if i % 5 == 0 else "" for i, v in enumerate(serie["Spread_Pond"])],
-        textposition="top center",
-        marker=dict(color="#1F4E79", size=6),
-        name="Spread Médio Ponderado"))
-    fig_line.update_layout(
-        title="Evolução do Spread Médio Ponderado",
-        xaxis_title="Data", yaxis_title="Spread (p.p.)",
-        plot_bgcolor="white", height=450)
-    st.plotly_chart(fig_line, use_container_width=True)
-
-    # ══════════════ 7) BARRA POR VÉRTICE  (mesma data-ref da função original)═
-    # Reutiliza df_vert_full já filtrado no intervalo
-    st.write(df_vert_full)
-    df_vert = df_vert_full[
-        df_vert_full["DATA"].dt.date.between(start_date, end_date)
-    ].copy()
-
-    if freq != "Diária":
-        rule = freq_map[freq]
-        wide_v = (df_vert.pivot(index="DATA", columns="Vertice", values="Spread")
-                          .resample(rule, label="right", closed="right")
-                          .median()
-                          .stack()
-                          .rename("Spread")
-                          .reset_index())
-        df_vert = wide_v.assign(Vertice=lambda x: x["Vertice"].astype(int))
-
-    # Sidebar – escolha do dia/semana/mês de referência
-    #Ver se esse gráfico faz sentido então
-    st.write('Ver se esse gráfico faz sentido')
-    ordem = ["25","26","27","28","30","32","35","40"]
-    df_base = df_vert
-    datas_disp = sorted(df_base["DATA"].dt.date.unique())
-
-    with st.sidebar:
-        if freq == "Diária":
-            data_ref = st.date_input("Data de referência",
-                                      value=datas_disp[-1],
-                                      min_value=datas_disp[0],
-                                      max_value=datas_disp[-1])
-        else:
-            rot = "Semana" if freq=="Semanal" else "Mês"
-            data_ref = st.selectbox(f"{rot} de referência",
-                                     datas_disp, index=len(datas_disp)-1)
-
-    df_sel = df_base[df_base["DATA"].dt.date == data_ref]
-    spread_map = dict(zip(df_sel["Vertice"].astype(str), df_sel["Spread"]))
-
-    # aplica peso de cada vértice
-    y_vals = []
-    for v in ordem:
-        b = f"B{v}"
-        if b in w and v in spread_map:
-            y_vals.append(spread_map[v] * w[b])   # já ponderado
-        else:
-            y_vals.append(None)
-
-    fig_bar = go.Figure(go.Bar(
-        x=ordem, y=y_vals,
-        text=[f"{x:.2f}" if x is not None else "" for x in y_vals],
-        textposition="outside",
-        marker_color="#1F4E79"))
-    fig_bar.update_layout(
-        title=f"Contribuição por Vértice – {data_ref:%d/%m/%Y}",
-        xaxis=dict(title="Vértice (anos)", type="category"),
-        yaxis=dict(title="Spread ponderado (p.p.)"),
-        plot_bgcolor="white", height=550, showlegend=False)
-    st.plotly_chart(fig_bar, use_container_width=True)
-
-    # ══════════════ 8) MOSTRA TABELA DE PESOS ════════════════════════════════
-    st.write("Pesos DIV1 utilizados:")
-    st.dataframe(
-        pesos[["B_REF","peso","DIV1_ATIVO"]]
-        .rename(columns={"B_REF":"B", "peso":"Peso","DIV1_ATIVO":"Σ DIV1"})
-        .style.format({"Peso":"{:.1%}","Σ DIV1":"{:.0f}"}))
-
-
 ###############################################################################
 # (Demais funções utilitárias, CSS e main() seguem SEM alterações relevantes,
 #  apenas atualizando assinaturas onde plot_div1_layout foi chamado.)
@@ -1724,11 +1007,7 @@ if __name__ == "__main__":
     df_div1 = process_div01()
 
     st.sidebar.title("Escolha a visão")
-    modo = st.sidebar.radio(
-        "Modo de análise",
-        ["Analisar Ativo", "Analisar Fundo", "Análise Geral",
-        "Analisar Spreads", "Analisar Spreads por Fundo",
-        "Analisar Spreads Deb‑B"])          # ← nova linha
+    modo = st.sidebar.radio("Modo de análise", ["Analisar Ativo", "Analisar Fundo", "Análise Geral","Analisar Spreads"], index=0)
 
     if modo == "Analisar Ativo":
         analisar_ativo(df_master, df_div1)  # assinatura original aceita apenas 2 args
@@ -1736,9 +1015,5 @@ if __name__ == "__main__":
         analisar_fundo(df_master, df_div1)
     elif modo == "Análise Geral":
         analisar_geral(df_master, df_div1)
-    elif modo == "Analisar Spreads":
+    else:
         analisar_spreads()
-    elif modo == "Analisar Spreads por Fundo":
-        analisar_spreads_por_fundo(df_master)
-    elif modo == "Analisar Spreads Deb‑B":
-        analisar_spreads_deb_b(df_master)
