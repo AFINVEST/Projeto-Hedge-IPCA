@@ -245,9 +245,9 @@ def _prep_ntnb_df(path: str | PathLike) -> pd.DataFrame:
     """
     dados = pd.read_excel(path, sheet_name="Planilha6")
 
-    nt_cols = ['NTNB25','NTNB26','NTNB27','NTNB28',
+    nt_cols = ['NTNB25','NTNB26','NTNB27','NTNB28','NTNB29',
                'NTNB30','NTNB32','NTNB33','NTNB35','NTNB40','NTNB45',
-               'NTNB50','NTNB60']
+               'NTNB50','NTNB55','NTNB60']
     dados = dados[['DATA'] + nt_cols].copy()
     dados.columns = ['DATA'] + nt_cols
 
@@ -1200,63 +1200,153 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
         den = verts["DIV1_SUM"].sum()
         return num / den if den else np.nan
 
-    # ▸ históricos de taxas dos ativos
-    tx_hist = (
-        pd.read_csv("Dados/dados_ativos (01_01_2025-29_04_2025).csv")
-          .rename(columns={"position_date": "DATA",
-                           "ativo": "Ativo",
-                           "tax": "TAX_INDIC"})
-    )
-    tx_hist["Ativo"]     = tx_hist["Ativo"].str.upper().str.strip()
-    tx_hist["DATA"]      = pd.to_datetime(tx_hist["DATA"], errors="coerce")
-    tx_hist["TAX_INDIC"] = pd.to_numeric(tx_hist["TAX_INDIC"], errors="coerce")
-    tx_hist.dropna(subset=["DATA", "TAX_INDIC"], inplace=True)
-
-    # ▸ spreads calculados previamente & NTNB
+    # ▸ históricos de taxas dos ativos ---------------------------------------------------
     if "df_spreads_af" not in st.session_state:
         st.session_state["df_spreads_af"] = load_spreads_afinvest()
-    lk = st.session_state["df_spreads_af"]
 
+    lk = st.session_state["df_spreads_af"]
+    lk["Ativo"] = lk["Ativo"].str.upper().str.strip()
+
+    # depois de ter lido lk
+    ativos_sem_bref = set(df_posicao["Ativo"].str.upper().str.strip()) - set(lk["Ativo"])
+    #if ativos_sem_bref:
+    #    if st.checkbox("Mostrar ativos sem B_REF", key="chk_ativos_sem_bref"):
+    #        st.warning(f"Sem B_REF em lk: {', '.join(sorted(ativos_sem_bref))}")
+
+    tx_hist = (
+        pd.read_csv("Dados/dados_ativos (01_01_2025-29_04_2025).csv")
+        .rename(columns={"position_date": "DATA",
+                        "ativo": "Ativo",
+                        "tax": "TAX_INDIC"})
+        .assign(Ativo=lambda d: d["Ativo"].str.upper().str.strip(),
+                DATA = lambda d: pd.to_datetime(d["DATA"],  errors="coerce"),
+                TAX_INDIC=lambda d: pd.to_numeric(d["TAX_INDIC"], errors="coerce"))
+        .dropna(subset=["DATA", "TAX_INDIC"])
+    )
+
+    full_dates = pd.date_range(tx_hist["DATA"].min(), tx_hist["DATA"].max(), freq="D")
+
+    tx_hist = (
+        tx_hist.set_index("DATA")                        # DATA → índice
+            .groupby("Ativo", group_keys=False)
+            .apply(lambda g: (
+                g.drop(columns="Ativo", errors="ignore")
+                    .reindex(full_dates)                 # insere dias faltantes
+                    .ffill()
+                    .bfill()
+                    .assign(Ativo=g.name)                # devolve a chave
+            ))
+            .rename_axis("DATA")                      # dá nome ao índice
+            .reset_index()                            # volta a ser coluna DATA
+    )
+
+    tx_hist_raw = (
+        pd.read_csv("Dados/dados_ativos (01_01_2025-29_04_2025).csv")
+        .rename(columns={"position_date": "DATA",
+                        "ativo": "Ativo",
+                        "tax": "TAX_INDIC"})
+        .assign(Ativo=lambda d: d["Ativo"].str.upper().str.strip(),
+                DATA = lambda d: pd.to_datetime(d["DATA"],  errors="coerce"),
+                TAX_INDIC=lambda d: pd.to_numeric(d["TAX_INDIC"], errors="coerce"))
+        .dropna(subset=["DATA", "TAX_INDIC"])
+    )
+
+    # datas-limite global (fim do período)
+    last_day = tx_hist_raw["DATA"].max()
+
+    def _expand_ffill(g: pd.DataFrame) -> pd.DataFrame:
+        """
+        Reindexa do 1º registro em diante e faz forward-fill.
+        Dias antes do 1º registro continuam NaN e serão descartados depois.
+        """
+        idx = pd.date_range(g.index.min(), last_day, freq="D")
+        g = (g.drop(columns="Ativo", errors="ignore")
+            .reindex(idx)          # só dias ≥ primeiro registro
+            .ffill()               # preenche para frente
+            .assign(Ativo=g.name)) # devolve a chave
+        return g
+
+    tx_hist = (
+        tx_hist_raw.set_index("DATA")
+                .groupby("Ativo", group_keys=False)
+                .apply(_expand_ffill)
+                .rename_axis("DATA")
+                .reset_index()
+    )
+
+    # ▸ NTNB longa – deixa contínua e garante col. DATA -----------------------------
     if "df_ntnb_long" not in st.session_state:
         st.session_state["df_ntnb_long"] = _prep_ntnb_df("BBG - ECO DASH_te.xlsx")
 
-    nt_long = st.session_state["df_ntnb_long"].copy()
-    nt_long["DATA"]       = pd.to_datetime(nt_long["DATA"], errors="coerce")
-    nt_long["NTNB_YIELD"] = pd.to_numeric(nt_long["NTNB_YIELD"], errors="coerce")
-    nt_long.dropna(subset=["DATA", "NTNB_YIELD"], inplace=True)
-
-    # ================================================================
-    # 1. BASE GERAL COM SPREAD (para reutilizar nos 3 gráficos)
-    # ================================================================
-    base0 = (
-        df_posicao[["Ativo", "Fundo", "DIV1_ATIVO"]]
-        .merge(lk, on="Ativo", how="left")
-        .merge(tx_hist, on="Ativo", how="left")
-        .dropna(subset=["B_REF", "DATA", "TAX_INDIC"])
+    nt_long = (
+        st.session_state["df_ntnb_long"]
+            .assign(DATA=lambda d: pd.to_datetime(d["DATA"], errors="coerce"),
+                    NTNB_YIELD=lambda d: pd.to_numeric(d["NTNB_YIELD"], errors="coerce"))
+            .dropna(subset=["DATA", "NTNB_YIELD"])
+            .sort_values(["B_REF", "DATA"])
+            .groupby("B_REF", group_keys=False)
+            .apply(lambda g: (
+                g.set_index("DATA")           # DATA → índice
+                .drop(columns="B_REF")       # evita duplicação
+                .reindex(full_dates)         # insere datas faltantes
+                .ffill()
+                .bfill()
+                .assign(B_REF=g["B_REF"].iloc[0])
+            ))
+            .rename_axis("DATA")              # <-- garante nome do índice
+            .reset_index()                    # DATA volta a ser coluna
     )
 
-    # merge_asof por vértice (garante NTNB da data imediatamente anterior)
+    # Se ainda assim por algum motivo a coluna vier como 'index', faça o fallback:
+    if "DATA" not in nt_long.columns and "index" in nt_long.columns:
+        nt_long.rename(columns={"index": "DATA"}, inplace=True)
+        
+    # -------------------------------------------------------------------------------
+    # 1. BASE GERAL COM SPREAD -------------------------------------------------------
+    base0 = (
+    df_posicao.assign(Ativo=lambda d: d["Ativo"].str.upper().str.strip())
+        [["Ativo", "Fundo", "DIV1_ATIVO"]]
+        .merge(lk.assign(Ativo=lambda d: d["Ativo"].str.upper().str.strip()),
+                on="Ativo", how="left")
+        .merge(tx_hist, on="Ativo", how="left")
+        .dropna(subset=["B_REF", "DATA", "TAX_INDIC"])   # DATA existe de fato
+    )
+
+    # merge_asof por vértice ---------------------------------------------------------
     frames = []
     for b_ref, left in base0.groupby("B_REF", sort=True):
-        right = nt_long[nt_long["B_REF"] == b_ref][["DATA", "NTNB_YIELD"]].sort_values("DATA")
+        right = nt_long.query("B_REF == @b_ref")[["DATA", "NTNB_YIELD"]]
         joined = pd.merge_asof(left.sort_values("DATA"), right,
-                               on="DATA", direction="backward")
+                            on="DATA", direction="nearest",
+                            tolerance=pd.Timedelta("30D"))
         frames.append(joined)
+
     base = pd.concat(frames, ignore_index=True).dropna(subset=["NTNB_YIELD"])
-
     base["SPREAD_PP"] = base["TAX_INDIC"] - base["NTNB_YIELD"]
-    base["DATA_DATE"] = base["DATA"].dt.date  # col. auxiliar p/ comparações
+    base["DATA_DATE"] = base["DATA"].dt.date
 
-    # ================================================================
-    # 2. SIDEBAR – filtros (sem check‑boxes)
-    # ================================================================
+    # sanity-check – algum ativo caiu? ----------------------------------------------
+    ativos_ini    = set(df_posicao["Ativo"].str.upper().str.strip().unique())
+    ativos_finais = set(base["Ativo"].unique())
+    ativos_perdidos = sorted(ativos_ini - ativos_finais)
+
+    # =======================================================================
+    # 2. SIDEBAR – filtros (sem check-boxes)
+    # =======================================================================
     st.sidebar.markdown("## Filtros")
 
-    # ▸ Filtros Gráfico 1 ---------------------------------------------------
+    # ▸ Filtros Gráfico 1 ----------------------------------------------------
     st.sidebar.subheader("Gráfico de Spread de Ativo")
     ativos_disp = sorted(base["Ativo"].unique())
     ativos_sel  = st.sidebar.multiselect("Ativos a exibir:", ativos_disp,
-                                         default=ativos_disp[:1])
+                                        default=ativos_disp[:1])
+    
+    if st.sidebar.checkbox("Mostrar ativos perdidos", key="chk_ativos_perdidos"):
+        if ativos_perdidos:
+            st.warning(f"⚠️ Ativos sem spread calculado: {', '.join(ativos_perdidos)}")
+        else:
+            st.success("✅ Todos os ativos foram mantidos no cálculo de spread.")
+
     st.sidebar.write('---')
 
     
@@ -1302,7 +1392,7 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
 
     if st.checkbox("Mostrar tabela de calculos"):
         st.dataframe(
-            df_plot[["DATA", "Ativo", "B_REF", "SPREAD_PP"]]
+            df_plot[["DATA", "Ativo", "B_REF", "SPREAD_PP","TAX_INDIC","NTNB_YIELD"]]
                    .drop_duplicates()
                    .sort_values("DATA")
                    .style.format({"SPREAD_PP": "{:.2f}"})
@@ -2070,7 +2160,6 @@ if __name__ == "__main__":
             ["NTNB × DAP", "Debêntures × NTNB-B"],
             key="sub_spread"
         )
-
         if tipo_spread == "NTNB × DAP":
             analisar_spreads()                     # ↩︎ continua igual
         else:                                      # Debêntures × NTNB-B
