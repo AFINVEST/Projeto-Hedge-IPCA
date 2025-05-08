@@ -1360,15 +1360,24 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
     # ▸ Filtros Gráfico 3 ---------------------------------------------------
     st.sidebar.subheader("Gráfico de Spread no Vértice")
     fundo_sel = st.sidebar.selectbox("Escolha o fundo:", fundos_disp)
-    datas_fundo = sorted(base[base["Fundo"] == fundo_sel]["DATA_DATE"].unique())
-    data_ref = st.sidebar.date_input("Escolha a data de ref:",
-                                     value=datas_fundo[-1],
-                                     min_value=datas_fundo[0],
-                                     max_value=datas_fundo[-1])
-    spread_tipo = st.sidebar.radio("Tipo de média:",
-                                   ("Ponderada", "Simples"),
-                                   horizontal=True)
 
+    datas_fundo = sorted(base[base["Fundo"] == fundo_sel]["DATA_DATE"].unique())
+    data_ref = st.sidebar.date_input("Data de referência 1:",
+                                    value=datas_fundo[-1],
+                                    min_value=datas_fundo[0],
+                                    max_value=datas_fundo[-1])
+
+    comparar_duas = st.sidebar.checkbox("Comparar com outra data",value=True)
+    if comparar_duas:
+        data_ref2 = st.sidebar.date_input("Data de referência 2:",
+                                        value=datas_fundo[0],
+                                        min_value=datas_fundo[0],
+                                        max_value=datas_fundo[-1])
+    else:
+        data_ref2 = None
+
+    spread_tipo = st.sidebar.radio("Tipo de média:", ("Ponderada", "Simples"),
+                                horizontal=True)
 
     # ================================================================
     # 3. GRÁFICO 1 – SPREAD POR ATIVO
@@ -1439,69 +1448,118 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
     # ================================================================
     # 4. GRÁFICO 2 – SPREAD MÉDIO (PONDERADA × SIMPLES)
     # ================================================================
-    st.subheader("Spread médio do Fundo por vértice")
+    # ---------- função util p/ uma data -----------------------------------
+    def _build_df_vert(dt):
+        """Retorna (fig, tabela) para o fundo_sel na data dt ou (None, None) se vazio."""
+        df_ref = base[(base["Fundo"] == fundo_sel) &
+                    (base["DATA_DATE"] == dt)].copy()
+        if df_ref.empty:
+            return None, None
 
-    df_ref = base[(base["Fundo"] == fundo_sel) &
-                  (base["DATA_DATE"] == data_ref)].copy()
-
-    if df_ref.empty:
-        st.info("Fundo sem ativos nessa data.")
-    else:
         if spread_tipo == "Ponderada":
             medias = (df_ref.groupby("B_REF")
                             .apply(lambda g: np.average(g["TAX_INDIC"],
                                                         weights=g["DIV1_ATIVO"]))
                             .reset_index(name="TAX_MED"))
-        else:  # média simples
-            medias = df_ref.groupby("B_REF", as_index=False)["TAX_INDIC"].mean()
-            medias.rename(columns={"TAX_INDIC": "TAX_MED"}, inplace=True)
+        else:
+            medias = (df_ref.groupby("B_REF", as_index=False)["TAX_INDIC"].mean()
+                            .rename(columns={"TAX_INDIC": "TAX_MED"}))
 
-        ntb_lookup = (nt_long[nt_long["DATA"].dt.date <= data_ref]
-                       .sort_values(["B_REF", "DATA"])
-                       .groupby("B_REF").tail(1)[["B_REF", "NTNB_YIELD"]])
+        ntb_lookup = (nt_long[nt_long["DATA"].dt.date <= dt]
+                    .sort_values(["B_REF", "DATA"])
+                    .groupby("B_REF").tail(1)[["B_REF", "NTNB_YIELD"]])
 
         df_vert = medias.merge(ntb_lookup, on="B_REF", how="left")
         df_vert["SPREAD_PP"] = df_vert["TAX_MED"] - df_vert["NTNB_YIELD"]
 
-        col_g2, col_g3, col_tbl2 = st.columns([4.9, 0.2, 4.9])
-        with col_g2:
-            titulo_tipo = "ponderado" if spread_tipo == "Ponderada" else "médio simples"
-            fig2 = go.Figure(go.Bar(
-                x=df_vert["B_REF"], y=df_vert["SPREAD_PP"],
-                text=[f"{v:.2f}" if pd.notna(v) else "" for v in df_vert["SPREAD_PP"]],
-                textposition="outside",
-                marker_color="#1F4E79"))
-            fig2.update_layout(title=f"{fundo_sel} – Spread {titulo_tipo} ({data_ref})",
-                              xaxis_title="Vértice (B)", yaxis_title="Spread (p.p.)",
-                              height=520, plot_bgcolor="white")
-            st.plotly_chart(fig2, use_container_width=True)
+        titulo_tipo = "ponderado" if spread_tipo == "Ponderada" else "médio simples"
+        fig = go.Figure(go.Bar(
+            x=df_vert["B_REF"], y=df_vert["SPREAD_PP"],
+            text=[f"{v:.2f}" if pd.notna(v) else "" for v in df_vert["SPREAD_PP"]],
+            textposition="outside",
+            marker_color="#1F4E79"))
+        
+        fig.update_layout(title=f"{fundo_sel} – Spread {titulo_tipo} ({dt})",
+                        xaxis_title="Vértice (B)", yaxis_title="Spread (p.p.)",
+                        height=520, plot_bgcolor="white")
 
-        with col_g3:
+        return fig, (df_vert.set_index("B_REF")
+                            .style.format({"TAX_MED": "{:.4f}",
+                                        "NTNB_YIELD": "{:.4f}",
+                                        "SPREAD_PP": "{:.2f}"}))
+
+    # ---------- render -----------------------------------------------------
+    st.subheader("Spread médio do Fundo por vértice")
+
+    if comparar_duas and data_ref2:
+        col_esq, col_meio, col_dir = st.columns([4.9, 0.2, 4.9])
+
+        fig1, tbl1 = _build_df_vert(data_ref)
+        fig2, tbl2 = _build_df_vert(data_ref2)
+
+        with col_esq:
+            if fig1:
+                st.plotly_chart(fig1, use_container_width=True)
+                st.table(tbl1)
+            else:
+                st.info("Fundo sem ativos na data 1.")
+        
+        with col_meio:
             st.html(
-                '''
-                <div class="divider-vertical-lines"></div>
-                <style>
-                    .divider-vertical-lines {
-                        border-left: 2px solid rgba(49, 51, 63, 0.2);
-                        height: 40vh;
-                        margin: auto;
-                    }
-                    @media (max-width: 768px) {
+                    '''
+                    <div class="divider-vertical-lines"></div>
+                    <style>
                         .divider-vertical-lines {
-                            display: none;
+                            border-left: 2px solid rgba(49, 51, 63, 0.2);
+                            height: 80vh;
+                            margin: auto;
                         }
-                    }
-                </style>
-                '''
-            )
+                        @media (max-width: 768px) {
+                            .divider-vertical-lines {
+                                display: none;
+                            }
+                        }
+                    </style>
+                    '''
+                )
 
+        with col_dir:
+            if fig2:
+                st.plotly_chart(fig2, use_container_width=True)
+                st.table(tbl2)
+            else:
+                st.info("Fundo sem ativos na data 2.")
+    else:
+        fig1, tbl1 = _build_df_vert(data_ref)
+        if fig1:
+            col_g2, col_g3, col_tbl2 = st.columns([4.9, 0.2, 4.9])
 
-        with col_tbl2:
-            st.table(df_vert.set_index("B_REF")
-                           .style.format({"TAX_MED": "{:.4f}",
-                                          "NTNB_YIELD": "{:.4f}",
-                                          "SPREAD_PP": "{:.2f}"}))
+            with col_g2:
+                st.plotly_chart(fig1, use_container_width=True)
 
+            with col_g3:
+                st.html(
+                    '''
+                    <div class="divider-vertical-lines"></div>
+                    <style>
+                        .divider-vertical-lines {
+                            border-left: 2px solid rgba(49, 51, 63, 0.2);
+                            height: 40vh;
+                            margin: auto;
+                        }
+                        @media (max-width: 768px) {
+                            .divider-vertical-lines {
+                                display: none;
+                            }
+                        }
+                    </style>
+                    '''
+                )
+
+            with col_tbl2:
+                st.table(tbl1)
+        else:
+            st.info("Fundo sem ativos nessa data.")
 
 # ═════ 2. GRÁFICO 1 – ATIVOS ═════════════════════════════════════════
 # ──────────────────────────────────────────────────────────────────────────
