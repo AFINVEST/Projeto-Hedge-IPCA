@@ -790,11 +790,11 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
     fundo_sel = st.sidebar.selectbox("Selecione o fundo:", sorted(df["Fundo"].unique()))
     df_fundo = df[df["Fundo"] == fundo_sel].copy()
      # ————————————————— AVISO DE DIFERENÇAS ————————————————— #
-    diffs = comparar_posicoes(fundo_sel, df_fundo["Ativo"].unique().tolist())
-    if diffs["faltando"]:
-        st.warning(f"❌ Ativos presentes ontem mas AUSENTES hoje: {', '.join(diffs['faltando'])}")
-    if diffs["novos"]:
-        st.info   (f"➕ Ativos NOVOS hoje (não constavam ontem): {', '.join(diffs['novos'])}")
+    #diffs = comparar_posicoes(fundo_sel, df_fundo["Ativo"].unique().tolist())
+    #if diffs["faltando"]:
+    #    st.warning(f"❌ Ativos presentes ontem mas AUSENTES hoje: {', '.join(diffs['faltando'])}")
+    #if diffs["novos"]:
+    #    st.info   (f"➕ Ativos NOVOS hoje (não constavam ontem): {', '.join(diffs['novos'])}")
 
     # Filtro de ativos internos ------------------------------------------------
     ativos_fundo = sorted(df_fundo["Ativo"].unique())
