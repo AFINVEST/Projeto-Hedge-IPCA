@@ -549,17 +549,32 @@ def plot_relacao_juros(df):
             "Juros projetados"].sum()
         .assign(**{"Juros projetados (R$ mil)": lambda x: x["Juros projetados"] / 1_000})
     )
-    p = (
-        ggplot(df_plot, aes(x="factor(Ano)",
-               y="Juros projetados (R$ mil)", fill="Semestre"))
-        + geom_col(position="dodge")
-        + scale_fill_manual(values=["#1F4E79", "#A5C8E1"])
-        + labs(title="Juros + Amortização Projetados por Ano/Semestre",
-               x="Ano", y="Juros (R$ mil)")
-        + theme(figure_size=(10, 4), axis_text_x=element_text(rotation=45, ha="right"),
-                panel_background=element_rect(fill="white"), plot_background=element_rect(fill="white"))
+    # Lista de anos únicos no eixo x
+    anos = sorted(df_plot["Ano"].unique())
+    semestres = df_plot["Semestre"].unique()
+
+    fig = go.Figure()
+
+    for semestre in semestres:
+        df_sem = df_plot[df_plot["Semestre"] == semestre]
+        fig.add_trace(go.Bar(
+            x=df_sem["Ano"],
+            y=df_sem["Juros projetados (R$ mil)"],
+            name=semestre,
+            marker_color="#1F4E79" if semestre == "1º Semestre" else "#A5C8E1"
+        ))
+
+    fig.update_layout(
+        barmode="group",  # Equivalente ao position="dodge"
+        title="Juros + Amortização Projetados por Ano/Semestre",
+        xaxis_title="Ano",
+        yaxis_title="Juros (R$ mil)",
+        height=400,
+        plot_bgcolor="white",
+        xaxis=dict(tickangle=45)
     )
-    st.pyplot(p.draw(), use_container_width=True)
+
+    st.plotly_chart(fig, use_container_width=True)
 
 
 
@@ -1305,11 +1320,11 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
     # 1. BASE GERAL COM SPREAD -------------------------------------------------------
     base0 = (
     df_posicao.assign(Ativo=lambda d: d["Ativo"].str.upper().str.strip())
-        [["Ativo", "Fundo", "DIV1_ATIVO"]]
-        .merge(lk.assign(Ativo=lambda d: d["Ativo"].str.upper().str.strip()),
-                on="Ativo", how="left")
-        .merge(tx_hist, on="Ativo", how="left")
-        .dropna(subset=["B_REF", "DATA", "TAX_INDIC"])   # DATA existe de fato
+      [["Ativo", "Fundo", "DIV1_ATIVO"]]
+      .merge(lk.assign(Ativo=lambda d: d["Ativo"].str.upper().str.strip()),
+             on="Ativo", how="left")
+      .merge(tx_hist, on="Ativo", how="left")
+      .dropna(subset=["B_REF", "DATA"])          #  ⬅️  NÃO inclui TAX_INDIC
     )
 
     # merge_asof por vértice ---------------------------------------------------------
@@ -1321,13 +1336,66 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
                             tolerance=pd.Timedelta("30D"))
         frames.append(joined)
 
+    # depois do merge_asof -----------------------------------------------
     base = pd.concat(frames, ignore_index=True).dropna(subset=["NTNB_YIELD"])
+
+    # base já contém DATA, NTNB_YIELD, TAX_INDIC (às vezes NaN)
     base["SPREAD_PP"] = base["TAX_INDIC"] - base["NTNB_YIELD"]
+
+    # ordena para garantir “primeiro registro” correto
+    base = base.sort_values(["Ativo", "DATA"])
+
+    # back-fill do spread só onde está NaN
+    base["SPREAD_PP"] = (
+        base.groupby("Ativo")["SPREAD_PP"]
+            .transform(lambda s: s.bfill())     # ← mantém mesmo index
+    )
+
+    base["DATA"] = pd.to_datetime(base["DATA"])   # garante datetime
+    mask = base["TAX_INDIC"].isna()
+    base.loc[mask, "TAX_INDIC"] = (
+            base.loc[mask, "NTNB_YIELD"] + base.loc[mask, "SPREAD_PP"]
+    )
+    base2 = base[base['Ativo'] == 'CRTA12']
+    st.write(base2)
+    # ――― 2. DATA INICIAL DA BASE ----------------------------------------------
+    global_start = base["DATA"].min().normalize()      # p.ex. 2025-04-01
+    # ――― 3. FUNÇÃO PARA COPIAR A LINHA INICIAL DO ATIVO ------------------------
+    def _prepend_first_row(g: pd.DataFrame) -> pd.DataFrame:
+        g = g.sort_values("DATA")
+        first_row = g.iloc[0]
+        first_date = first_row["DATA"].normalize()
+
+        # se o ativo já começa na data inicial, nada a fazer
+        if first_date == global_start:
+            return g
+
+        # range de datas que faltam (global_start → dia anterior ao 1º registro)
+        missing = pd.date_range(global_start, first_date - pd.Timedelta(days=1), freq="D")
+
+        # cria DataFrame replicando a 1ª linha, só trocando a DATA
+        pad = pd.DataFrame([first_row] * len(missing))
+        pad.loc[:, "DATA"] = missing.to_pydatetime()
+      # ← usa posição, não rótulo
+
+        return pd.concat([pad, g], ignore_index=True)
+
+
+    # ――― 4. APLICA PARA TODOS OS ATIVOS ----------------------------------------
+    base_ext = (base.groupby("Ativo", group_keys=False)
+                    .apply(_prepend_first_row)
+                    .sort_values(["Ativo", "DATA"])
+                    .reset_index(drop=True))
     base["DATA_DATE"] = base["DATA"].dt.date
+    base_ext["DATA_DATE"] = base_ext["DATA"].dt.date
+    base3 = base_ext[base_ext['Ativo'] == 'CRTA12']
+    st.write(base3)
+
+    # agora `base_ext` contém linhas duplicadas com SPREAD_PP constante
 
     # sanity-check – algum ativo caiu? ----------------------------------------------
     ativos_ini    = set(df_posicao["Ativo"].str.upper().str.strip().unique())
-    ativos_finais = set(base["Ativo"].unique())
+    ativos_finais = set(base_ext["Ativo"].unique())
     ativos_perdidos = sorted(ativos_ini - ativos_finais)
 
     # =======================================================================
@@ -1337,7 +1405,7 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
 
     # ▸ Filtros Gráfico 1 ----------------------------------------------------
     st.sidebar.subheader("Gráfico de Spread de Ativo")
-    ativos_disp = sorted(base["Ativo"].unique())
+    ativos_disp = sorted(base_ext["Ativo"].unique())
     ativos_sel  = st.sidebar.multiselect("Ativos a exibir:", ativos_disp,
                                         default=ativos_disp[:1])
     
@@ -1352,7 +1420,7 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
     
     # ▸ Filtros Gráfico 2 ---------------------------------------------------
     st.sidebar.subheader("Gráfico de Spread dos Fundos")
-    fundos_disp = sorted(base["Fundo"].unique())
+    fundos_disp = sorted(base_ext["Fundo"].unique())
     fundos_sel = st.sidebar.multiselect("Escolha os fundos para o spread médio:", fundos_disp,
                                         default=[fundos_disp[0]])
     st.sidebar.write('---')
@@ -1361,7 +1429,7 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
     st.sidebar.subheader("Gráfico de Spread no Vértice")
     fundo_sel = st.sidebar.selectbox("Escolha o fundo:", fundos_disp)
 
-    datas_fundo = sorted(base[base["Fundo"] == fundo_sel]["DATA_DATE"].unique())
+    datas_fundo = sorted(base_ext[base_ext["Fundo"] == fundo_sel]["DATA_DATE"].unique())
     data_ref = st.sidebar.date_input("Data de referência 1:",
                                     value=datas_fundo[-1],
                                     min_value=datas_fundo[0],
@@ -1384,7 +1452,7 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
     # ================================================================
     st.subheader("Spread Ativos x B-Referência")
 
-    df_plot = (base[base["Ativo"].isin(ativos_sel)]
+    df_plot = (base_ext[base_ext["Ativo"].isin(ativos_sel)]
                .assign(Data_Str=lambda x: x["DATA"].dt.strftime("%Y‑%m‑%d")))
 
     fig = go.Figure()
@@ -1421,7 +1489,7 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
 
     fig3 = go.Figure()
     for fundo in fundos_sel:
-        df_fund = base[base["Fundo"] == fundo].copy()
+        df_fund = base_ext[base_ext["Fundo"] == fundo].copy()
         serie = (df_fund.groupby("DATA_DATE", group_keys=False)
                           .apply(_spread_fundo_dia)
                           .reset_index(name="SPREAD_POND"))
@@ -1438,7 +1506,7 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
     if st.checkbox("Mostrar tabela de calculos "):
         big_tbl = None
         for fundo in fundos_sel:
-            df_fund = base[base["Fundo"] == fundo].copy()
+            df_fund = base_ext[base_ext["Fundo"] == fundo].copy()
             serie = (df_fund.groupby("DATA_DATE", group_keys=False)
                              .apply(_spread_fundo_dia)
                              .rename(fundo))
@@ -1451,8 +1519,9 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
     # ---------- função util p/ uma data -----------------------------------
     def _build_df_vert(dt):
         """Retorna (fig, tabela) para o fundo_sel na data dt ou (None, None) se vazio."""
-        df_ref = base[(base["Fundo"] == fundo_sel) &
-                    (base["DATA_DATE"] == dt)].copy()
+        df_ref = base_ext[(base_ext["Fundo"] == fundo_sel) &
+                    (base_ext["DATA_DATE"] == dt)].copy()
+        st.write(df_ref)
         if df_ref.empty:
             return None, None
 
@@ -1471,7 +1540,7 @@ def analisar_spreads_deb_b2(df_posicao: pd.DataFrame) -> None:
 
         df_vert = medias.merge(ntb_lookup, on="B_REF", how="left")
         df_vert["SPREAD_PP"] = df_vert["TAX_MED"] - df_vert["NTNB_YIELD"]
-
+        
         titulo_tipo = "ponderado" if spread_tipo == "Ponderada" else "médio simples"
         fig = go.Figure(go.Bar(
             x=df_vert["B_REF"], y=df_vert["SPREAD_PP"],
@@ -1810,8 +1879,6 @@ def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
                                         "NTNB_YIELD":"{:.4f}",
                                         "SPREAD_PP":"{:.2f}"})
                 )
-
-
 
     # ───────────────── 3. GRÁFICO 3 – SÉRIE 1‑N FUNDOS ────────────────────
     if show_g3:
