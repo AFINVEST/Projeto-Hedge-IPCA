@@ -695,7 +695,7 @@ def atualizar_session_state_contratos(fundo: str, df_contr: pd.DataFrame):
                            file_name="posicoes_por_fundo.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
-
+###############################################################################
 ###############################################################################
 # FUNÇÕES DE PÁGINA – AJUSTES PARA PASSAR CONTAGEM CARTEIRA
 ###############################################################################
