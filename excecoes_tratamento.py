@@ -78,8 +78,8 @@ ASSETS: list[dict] = [
     # dict(code_xp="CPLD29", tab="DEB",
     #     label="CPLD29", rate_src="manual", rate=7.6122),
 
-    # dict(code_xp="AESOA1", tab="DEB",
-    #     label="AESOA1", rate_src="manual", rate=8.2575),
+    dict(code_xp="AESOA1", tab="DEB",
+         label="AESOA1", rate_src="manual", rate=7.7596),
 
     # --------- EXCEÇÕES FIXAS (buscam taxa no site) ------------------------
     dict(code_xp="21F0189140", tab="CRI",
