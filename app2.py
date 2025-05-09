@@ -24,6 +24,7 @@ from plotnine import (
 from os import PathLike
 # utils_posicao.py  (adicione no topo do projeto ou ao fim do script)
 import pandas as pd, datetime as dt, os
+
 POS_FILE = "Dados/hist_posicoes_fundos.csv"
 
 def _hoje() -> str:
@@ -270,7 +271,6 @@ def _prep_ntnb_df(path: str | PathLike) -> pd.DataFrame:
 
 if "df_ntnb_long" not in st.session_state:
     st.session_state["df_ntnb_long"] = _prep_ntnb_df("BBG - ECO DASH_te.xlsx")
-
 
 
 def process_df() -> pd.DataFrame:
@@ -890,7 +890,6 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
     plot_relacao_juros(df_fundo)
     df_contr = plot_div1_layout(df_fundo, df_div1, carteira_fundo)
     atualizar_session_state_contratos(fundo_sel, df_contr)
-    salvar_posicao(df_fundo)  
 
 
     # … (opção de mostrar base do fundo permanece)
