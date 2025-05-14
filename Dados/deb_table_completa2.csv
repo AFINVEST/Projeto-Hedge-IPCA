@@ -734,30 +734,11 @@ Juros,15/04/2030,1233.0,123.0,-,"22,699679","0,00000000","15,954394",CEEBC3
 Juros|Amortização,15/10/2030,1361.0,128.0,-,"23,635759","405,245282","290,602779",CEEBC3
 Juros,15/04/2031,1484.0,123.0,-,"11,349839","0,00000000","7,424649",CEEBC3
 Juros|Amortização,15/10/2031,1612.0,128.0,-,"11,817879","405,245282","263,020974",CEEBC3
-Juros,16/06/2025,35.0,35.0,-,"36,797988","0,00000000","36,412243",EQPA18
-Juros,15/12/2025,163.0,128.0,-,"39,63413","0,00000000","37,735947",EQPA18
-Juros,15/06/2026,285.0,122.0,-,"37,742529","0,00000000","34,638898",EQPA18
-Juros,15/12/2026,412.0,127.0,-,"39,31863","0,00000000","34,731599",EQPA18
-Juros,15/06/2027,535.0,123.0,-,"38,057562","0,00000000","32,39543",EQPA18
-Juros,15/12/2027,662.0,127.0,-,"39,31863","0,00000000","32,213247",EQPA18
-Juros,16/06/2028,788.0,126.0,-,"39,003223","0,00000000","30,765269",EQPA18
-Juros,15/12/2028,913.0,125.0,-,"38,68791","0,00000000","29,389374",EQPA18
-Juros,15/06/2029,1036.0,123.0,-,"38,057562","0,00000000","27,859442",EQPA18
-Juros,17/12/2029,1162.0,126.0,-,"39,003223","0,00000000","27,488817",EQPA18
-Juros,17/06/2030,1286.0,124.0,-,"38,37269","0,00000000","26,05334",EQPA18
-Juros,16/12/2030,1413.0,127.0,-,"39,31863","0,00000000","25,694069",EQPA18
-Juros,16/06/2031,1535.0,122.0,-,"37,742529","0,00000000","23,774568",EQPA18
-Juros,15/12/2031,1664.0,129.0,-,"39,949724","0,00000000","24,206235",EQPA18
-Juros,15/06/2032,1788.0,124.0,-,"38,37269","0,00000000","22,398623",EQPA18
-Juros,15/12/2032,1915.0,127.0,-,"39,31863","0,00000000","22,089749",EQPA18
-Juros,15/06/2033,2041.0,126.0,-,"39,003223","0,00000000","21,09682",EQPA18
-Juros|Amortização,15/12/2033,2167.0,126.0,-,"39,003223","256,492862","153,883601",EQPA18
-Juros,15/06/2034,2291.0,124.0,-,"28,779517","0,00000000","14,438089",EQPA18
-Juros|Amortização,15/12/2034,2417.0,126.0,-,"29,252417","256,492606","138,015861",EQPA18
-Juros,15/06/2035,2540.0,123.0,-,"19,02879","0,00000000","8,856821",EQPA18
-Juros|Amortização,17/12/2035,2666.0,126.0,-,"19,501621","256,49299","123,677701",EQPA18
-Juros,16/06/2036,2788.0,122.0,-,"9,435636","0,00000000","4,075764",EQPA18
-Juros|Amortização,15/12/2036,2917.0,129.0,-,"9,987436","256,49299","110,722292",EQPA18
+,,,,,,,,EQPA18
+,,,,,,,,EQPA18
+,,,,,,,,EQPA18
+,,,,,,,,EQPA18
+,,,,,,,,EQPA18
 Juros,15/09/2025,89.0,126.0,-,"33,821637","0,00000000","32,990008",ELET14
 Juros,16/03/2026,214.0,125.0,-,"33,549114","0,00000000","31,599717",ELET14
 Juros,15/09/2026,340.0,126.0,-,"33,821637","0,00000000","30,753151",ELET14
@@ -1000,154 +981,176 @@ Juros|Amortização,15/09/2036,2843.0,126.0,-,"8,121363","63,503925","31,055619"
 Juros|Amortização,16/03/2037,2968.0,125.0,-,"6,041922","63,503862","29,066156",AESOA1
 Juros|Amortização,15/09/2037,3094.0,126.0,-,"4,060683","63,503957","27,211445",AESOA1
 Juros|Amortização,15/03/2038,3216.0,122.0,-,"1,964899","63,503957","25,438579",AESOA1
-Juros|Amortização,15/04/2026,233.0,-,-,0,0,"14,48",CRA Ferroeste 2ª Série
-Juros|Amortização,15/04/2027,480.0,-,-,0,0,"64,98",CRA Ferroeste 2ª Série
-Juros|Amortização,15/04/2028,730.0,-,-,0,0,"57,14",CRA Ferroeste 2ª Série
-Juros|Amortização,15/04/2029,976.0,-,-,0,0,"50,08",CRA Ferroeste 2ª Série
-Juros|Amortização,15/04/2030,1224.0,-,-,0,0,"43,78",CRA Ferroeste 2ª Série
-Juros|Amortização,15/04/2031,1473.0,-,-,0,0,"38,16",CRA Ferroeste 2ª Série
-Juros|Amortização,15/12/2025,153.0,-,-,0,0,"37,69",CRTA12
-Juros|Amortização,15/12/2026,400.0,-,-,0,0,"34,52",CRTA12
-Juros|Amortização,15/12/2027,648.0,-,-,0,0,"31,86",CRTA12
-Juros|Amortização,15/12/2028,897.0,-,-,0,0,"28,92",CRTA12
-Juros|Amortização,15/12/2031,1643.0,-,-,0,0,"25,66",CRTA12
-Juros|Amortização,15/12/2032,1892.0,-,-,0,0,"20,44",CRTA12
-Juros|Amortização,15/12/2033,2142.0,-,-,0,0,"21,18",CRTA12
-Juros|Amortização,15/12/2034,2391.0,-,-,0,0,"19,36",CRTA12
-Juros|Amortização,15/12/2036,2888.0,-,-,0,0,"31,93",CRTA12
-Juros|Amortização,15/12/2037,3135.0,-,-,0,0,"30,63",CRTA12
-Juros|Amortização,15/12/2038,3383.0,-,-,0,0,"20,96",CRTA12
-Juros|Amortização,15/12/2039,3633.0,-,-,0,0,"19,24",CRTA12
-Juros|Amortização,15/12/2042,4382.0,-,-,0,0,"18,97",CRTA12
-Juros|Amortização,15/12/2043,4629.0,-,-,0,0,"18,5",CRTA12
-Juros|Amortização,15/01/2026,172.0,-,-,0,0,"15,29",CRA Ferroeste 2ª Série
-Juros|Amortização,15/01/2027,419.0,-,-,0,0,"67,29",CRA Ferroeste 2ª Série
-Juros|Amortização,15/01/2028,668.0,-,-,0,0,"59,33",CRA Ferroeste 2ª Série
-Juros|Amortização,15/01/2029,915.0,-,-,0,0,"51,57",CRA Ferroeste 2ª Série
-Juros|Amortização,15/01/2030,1162.0,-,-,0,0,"45,23",CRA Ferroeste 2ª Série
-Juros|Amortização,15/01/2031,1412.0,-,-,0,0,"39,49",CRA Ferroeste 2ª Série
-Juros|Amortização,15/07/2025,45.0,-,-,0,0,"15,49",CRA Ferroeste 2ª Série
-Juros|Amortização,15/07/2026,295.0,-,-,0,0,"71,77",CRA Ferroeste 2ª Série
-Juros|Amortização,15/07/2027,543.0,-,-,0,0,"63,23",CRA Ferroeste 2ª Série
-Juros|Amortização,15/07/2028,792.0,-,-,0,0,"55,29",CRA Ferroeste 2ª Série
-Juros|Amortização,15/07/2029,1039.0,-,-,0,0,"48,49",CRA Ferroeste 2ª Série
-Juros|Amortização,15/07/2030,1286.0,-,-,0,0,"42,32",CRA Ferroeste 2ª Série
-Juros|Amortização,15/06/2026,273.0,-,-,0,0,"34,53",CRTA12
-Juros|Amortização,15/06/2027,521.0,-,-,0,0,"32,13",CRTA12
-Juros|Amortização,15/06/2029,1019.0,-,-,0,0,"27,34",CRTA12
-Juros|Amortização,15/06/2032,1765.0,-,-,0,0,"20,79",CRTA12
-Juros|Amortização,15/06/2033,2016.0,-,-,0,0,"22,16",CRTA12
-Juros|Amortização,15/06/2034,2265.0,-,-,0,0,"19,97",CRTA12
-Juros|Amortização,15/06/2035,2513.0,-,-,0,0,"34,1",CRTA12
-Juros|Amortização,15/06/2037,3008.0,-,-,0,0,"32,27",CRTA12
-Juros|Amortização,15/06/2038,3257.0,-,-,0,0,"22,2",CRTA12
-Juros|Amortização,15/06/2039,3506.0,-,-,0,0,"20,44",CRTA12
-Juros|Amortização,15/06/2040,3758.0,-,-,0,0,"21,02",CRTA12
-Juros|Amortização,15/06/2043,4502.0,-,-,0,0,"19,93",CRTA12
-Juros|Amortização,15/03/2029,956.0,-,-,0,0,"868,49",CERT11
-Juros|Amortização,15/10/2025,111.0,-,-,0,0,"16,37",CRA Ferroeste 2ª Série
-Juros|Amortização,15/10/2026,359.0,-,-,0,0,"69,88",CRA Ferroeste 2ª Série
-Juros|Amortização,15/10/2027,607.0,-,-,0,0,"61,3",CRA Ferroeste 2ª Série
-Juros|Amortização,15/10/2028,855.0,-,-,0,0,"53,58",CRA Ferroeste 2ª Série
-Juros|Amortização,15/10/2029,1103.0,-,-,0,0,"46,85",CRA Ferroeste 2ª Série
-Juros|Amortização,15/10/2030,1352.0,-,-,0,0,"40,93",CRA Ferroeste 2ª Série
-Juros|Amortização,16/04/2026,234.0,-,-,0,0,"3,34",CRI Bem Brasil
-Juros|Amortização,16/04/2027,481.0,-,-,0,0,"2,41",CRI Bem Brasil
-Juros|Amortização,16/08/2028,815.0,-,-,0,0,"1,37",CRI Bem Brasil
-Juros|Amortização,16/08/2029,1063.0,-,-,0,0,"0,66",CRI Bem Brasil
-Juros|Amortização,16/12/2025,154.0,-,-,0,0,"3,11",CRI Bem Brasil
-Juros|Amortização,16/12/2026,401.0,-,-,0,0,"2,25",CRI Bem Brasil
-Juros|Amortização,16/12/2027,649.0,-,-,0,0,"1,45",CRI Bem Brasil
-Juros|Amortização,16/12/2030,1394.0,-,-,0,0,"34,48",CRTA12
-Juros|Amortização,16/12/2041,4133.0,-,-,0,0,"18,41",CRTA12
-Juros|Amortização,16/02/2027,439.0,-,-,0,0,"2,11",CRI Bem Brasil
-Juros|Amortização,16/02/2028,691.0,-,-,0,0,"1,43",CRI Bem Brasil
-Juros|Amortização,16/02/2029,937.0,-,-,0,0,"0,65",CRI Bem Brasil
-Juros|Amortização,16/01/2026,173.0,-,-,0,0,"3,42",CRI Bem Brasil
-Juros|Amortização,16/01/2029,916.0,-,-,0,0,"0,6",CRI Bem Brasil
-Juros|Amortização,16/07/2025,46.0,-,-,0,0,"4,25",CRI Bem Brasil
-Juros|Amortização,16/07/2026,296.0,-,-,0,0,"3,43",CRI Bem Brasil
-Juros|Amortização,16/07/2027,544.0,-,-,0,0,"2,36",CRI Bem Brasil
-Juros|Amortização,16/06/2025,25.0,-,-,0,0,"37,41",CRTA12
-Juros|Amortização,16/06/2026,274.0,-,-,0,0,"3,14",CRI Bem Brasil
-Juros|Amortização,16/06/2027,522.0,-,-,0,0,"2,16",CRI Bem Brasil
-Juros|Amortização,16/06/2028,772.0,-,-,0,0,"30,36",CRTA12
-Juros|Amortização,16/06/2031,1514.0,-,-,0,0,"25,56",CRTA12
-Juros|Amortização,16/06/2036,2759.0,-,-,0,0,"33,29",CRTA12
-Juros|Amortização,16/06/2042,4253.0,-,-,0,0,"20,29",CRTA12
-Juros|Amortização,16/05/2025,4.0,-,-,0,0,"4,1",CRI Bem Brasil
-Juros|Amortização,16/05/2028,750.0,-,-,0,0,"1,2",CRI Bem Brasil
-Juros|Amortização,16/05/2029,998.0,-,-,0,0,"0,61",CRI Bem Brasil
-Juros|Amortização,16/03/2027,459.0,-,-,0,0,"2,21",CRI Bem Brasil
-Juros|Amortização,16/03/2028,710.0,-,-,0,0,"1,28",CRI Bem Brasil
-Juros|Amortização,16/03/2029,957.0,-,-,0,0,"0,62",CRI Bem Brasil
-Juros|Amortização,16/10/2025,112.0,-,-,0,0,"3,65",CRI Bem Brasil
-Juros|Amortização,16/10/2026,360.0,-,-,0,0,"2,4",CRI Bem Brasil
-Juros|Amortização,16/09/2025,90.0,-,-,0,0,"204,24",CRI Bem Brasil
-Juros|Amortização,16/09/2026,339.0,-,-,0,0,"186,32",CRI Bem Brasil
-Juros|Amortização,16/09/2027,587.0,-,-,0,0,"170,31",CRI Bem Brasil
-Juros|Amortização,17/04/2029,978.0,-,-,0,0,"0,65",CRI Bem Brasil
-Juros|Amortização,17/08/2027,566.0,-,-,0,0,"2,34",CRI Bem Brasil
-Juros|Amortização,17/12/2029,1145.0,-,-,0,0,"26,9",CRTA12
-Juros|Amortização,17/12/2035,2639.0,-,-,0,0,"32,45",CRTA12
-Juros|Amortização,17/12/2040,3884.0,-,-,0,0,"19,62",CRTA12
-Juros|Amortização,17/07/2029,1041.0,-,-,0,0,"0,63",CRI Bem Brasil
-Juros|Amortização,17/06/2025,26.0,-,-,0,0,"4,71",CRI Bem Brasil
-Juros|Amortização,17/06/2030,1267.0,-,-,0,0,"35,69",CRTA12
-Juros|Amortização,17/06/2041,4006.0,-,-,0,0,"19,67",CRTA12
-Juros|Amortização,17/03/2026,213.0,-,-,0,0,"2,89",CRI Bem Brasil
-Juros|Amortização,17/11/2026,381.0,-,-,0,0,"2,38",CRI Bem Brasil
-Juros|Amortização,17/11/2027,628.0,-,-,0,0,"1,39",CRI Bem Brasil
-Juros|Amortização,17/11/2028,878.0,-,-,0,0,"0,67",CRI Bem Brasil
-Juros|Amortização,17/10/2028,857.0,-,-,0,0,"0,64",CRI Bem Brasil
-Juros|Amortização,18/04/2028,732.0,-,-,0,0,"1,47",CRI Bem Brasil
-Juros|Amortização,18/08/2025,69.0,-,-,0,0,"4,85",CRI Bem Brasil
-Juros|Amortização,18/08/2026,319.0,-,-,0,0,"3,56",CRI Bem Brasil
-Juros|Amortização,18/12/2028,898.0,-,-,0,0,"0,63",CRI Bem Brasil
-Juros|Amortização,18/01/2027,420.0,-,-,0,0,"2,35",CRI Bem Brasil
-Juros|Amortização,18/01/2028,670.0,-,-,0,0,"1,57",CRI Bem Brasil
-Juros|Amortização,18/07/2028,794.0,-,-,0,0,"1,38",CRI Bem Brasil
-Juros|Amortização,18/06/2029,1020.0,-,-,0,0,"0,67",CRI Bem Brasil
-Juros|Amortização,18/05/2026,254.0,-,-,0,0,"3,16",CRI Bem Brasil
-Juros|Amortização,18/05/2027,502.0,-,-,0,0,"2,28",CRI Bem Brasil
-Juros|Amortização,18/11/2025,135.0,-,-,0,0,"3,79",CRI Bem Brasil
-Juros|Amortização,18/10/2027,608.0,-,-,0,0,"1,47",CRI Bem Brasil
-Juros|Amortização,18/09/2028,837.0,-,-,0,0,"155,5",CRI Bem Brasil
-Juros|Amortização,18/09/2029,1085.0,-,-,0,0,"141,98",CRI Bem Brasil
-Juros|Amortização,19/02/2026,195.0,-,-,0,0,"3,55",CRI Bem Brasil
-Juros|Amortização,19/06/2028,773.0,-,-,0,0,"1,52",CRI Bem Brasil
-Juros|Amortização,21/08/2025,72.0,-,-,0,0,"29,71",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,21/01/2026,176.0,-,-,0,0,"28,21",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,21/05/2025,7.0,-,-,0,0,"30,69",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,21/05/2026,257.0,-,-,0,0,"0,33",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,21/11/2025,137.0,-,-,0,0,"28,69",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,21/10/2025,115.0,-,-,0,0,"29,08",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,22/04/2026,237.0,-,-,0,0,"27,36",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,22/07/2025,50.0,-,-,0,0,"30,04",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,22/06/2026,278.0,-,-,0,0,"26,65",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,23/12/2025,159.0,-,-,0,0,"28,45",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,23/02/2026,197.0,-,-,0,0,"27,91",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,23/06/2025,29.0,-,-,0,0,"30,36",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,23/06/2026,279.0,-,-,0,0,"26,79",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,23/03/2026,217.0,-,-,0,0,"27,63",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,23/09/2025,95.0,-,-,0,0,"29,37",CRI Vic Engenharia 1ª Emissão
-Juros|Amortização,25/03/2026,219.0,-,-,0,0,"84,05",TBCR18
-Juros|Amortização,25/03/2027,466.0,-,-,0,0,"91,63",TBCR18
-Juros|Amortização,25/03/2030,1209.0,-,-,0,0,"72,83",TBCR18
-Juros|Amortização,25/03/2031,1459.0,-,-,0,0,"79,24",TBCR18
-Juros|Amortização,25/03/2032,1710.0,-,-,0,0,"63,49",TBCR18
-Juros|Amortização,25/09/2025,97.0,-,-,0,0,"92,84",TBCR18
-Juros|Amortização,25/09/2026,346.0,-,-,0,0,"79,12",TBCR18
-Juros|Amortização,25/09/2028,842.0,-,-,0,0,"79,33",TBCR18
-Juros|Amortização,25/09/2029,1090.0,-,-,0,0,"73,63",TBCR18
-Juros|Amortização,25/09/2030,1338.0,-,-,0,0,"88,99",TBCR18
-Juros|Amortização,25/09/2031,1587.0,-,-,0,0,"71,69",TBCR18
-Juros|Amortização,26/03/2029,963.0,-,-,0,0,"75,63",TBCR18
-Juros|Amortização,27/03/2028,717.0,-,-,0,0,"86,97",TBCR18
-Juros|Amortização,27/09/2027,594.0,-,-,0,0,"86,19",TBCR18
-Juros|Amortização,27/09/2032,1838.0,-,-,0,0,"56,59",TBCR18
-Juros|Amortização,30/04/2026,243.0,-,-,0,0,"652,25",BRFS31
-Juros|Amortização,30/10/2025,122.0,-,-,0,0,"18,49",BRFS31
+Juros|Amortização,15/04/2026,231.0,-,-,0,0,"14,5",CRA Ferroeste 2ª Série
+Juros|Amortização,15/04/2027,478.0,-,-,0,0,"65,06",CRA Ferroeste 2ª Série
+Juros|Amortização,15/04/2028,728.0,-,-,0,0,"57,22",CRA Ferroeste 2ª Série
+Juros|Amortização,15/04/2029,974.0,-,-,0,0,"50,15",CRA Ferroeste 2ª Série
+Juros|Amortização,15/04/2030,1222.0,-,-,0,0,"43,83",CRA Ferroeste 2ª Série
+Juros|Amortização,15/04/2031,1471.0,-,-,0,0,"38,21",CRA Ferroeste 2ª Série
+Juros|Amortização,15/12/2025,151.0,-,-,0,0,"37,75",CRTA12
+Juros|Amortização,15/12/2026,398.0,-,-,0,0,"34,59",CRTA12
+Juros|Amortização,15/12/2027,646.0,-,-,0,0,"31,94",CRTA12
+Juros|Amortização,15/12/2028,895.0,-,-,0,0,"29,02",CRTA12
+Juros|Amortização,15/12/2031,1641.0,-,-,0,0,"25,79",CRTA12
+Juros|Amortização,15/12/2032,1890.0,-,-,0,0,"20,57",CRTA12
+Juros|Amortização,15/12/2033,2140.0,-,-,0,0,"21,32",CRTA12
+Juros|Amortização,15/12/2034,2389.0,-,-,0,0,"19,5",CRTA12
+Juros|Amortização,15/12/2036,2886.0,-,-,0,0,"32,2",CRTA12
+Juros|Amortização,15/12/2037,3133.0,-,-,0,0,"30,91",CRTA12
+Juros|Amortização,15/12/2038,3381.0,-,-,0,0,"21,16",CRTA12
+Juros|Amortização,15/12/2039,3631.0,-,-,0,0,"19,44",CRTA12
+Juros|Amortização,15/12/2042,4380.0,-,-,0,0,"19,2",CRTA12
+Juros|Amortização,15/12/2043,4627.0,-,-,0,0,"18,74",CRTA12
+Juros|Amortização,15/01/2026,170.0,-,-,0,0,"15,31",CRA Ferroeste 2ª Série
+Juros|Amortização,15/01/2027,417.0,-,-,0,0,"67,37",CRA Ferroeste 2ª Série
+Juros|Amortização,15/01/2028,666.0,-,-,0,0,"59,41",CRA Ferroeste 2ª Série
+Juros|Amortização,15/01/2029,913.0,-,-,0,0,"51,64",CRA Ferroeste 2ª Série
+Juros|Amortização,15/01/2030,1160.0,-,-,0,0,"45,29",CRA Ferroeste 2ª Série
+Juros|Amortização,15/01/2031,1410.0,-,-,0,0,"39,54",CRA Ferroeste 2ª Série
+Juros|Amortização,15/07/2025,43.0,-,-,0,0,"15,51",CRA Ferroeste 2ª Série
+Juros|Amortização,15/07/2026,293.0,-,-,0,0,"71,86",CRA Ferroeste 2ª Série
+Juros|Amortização,15/07/2027,541.0,-,-,0,0,"63,31",CRA Ferroeste 2ª Série
+Juros|Amortização,15/07/2028,790.0,-,-,0,0,"55,36",CRA Ferroeste 2ª Série
+Juros|Amortização,15/07/2029,1037.0,-,-,0,0,"48,55",CRA Ferroeste 2ª Série
+Juros|Amortização,15/07/2030,1284.0,-,-,0,0,"42,37",CRA Ferroeste 2ª Série
+Juros|Amortização,15/06/2026,271.0,-,-,0,0,"34,59",CRTA12
+Juros|Amortização,15/06/2027,519.0,-,-,0,0,"32,21",CRTA12
+Juros|Amortização,15/06/2029,1017.0,-,-,0,0,"27,45",CRTA12
+Juros|Amortização,15/06/2032,1763.0,-,-,0,0,"20,91",CRTA12
+Juros|Amortização,15/06/2033,2014.0,-,-,0,0,"22,3",CRTA12
+Juros|Amortização,15/06/2034,2263.0,-,-,0,0,"20,11",CRTA12
+Juros|Amortização,15/06/2035,2511.0,-,-,0,0,"34,35",CRTA12
+Juros|Amortização,15/06/2037,3006.0,-,-,0,0,"32,56",CRTA12
+Juros|Amortização,15/06/2038,3255.0,-,-,0,0,"22,41",CRTA12
+Juros|Amortização,15/06/2039,3504.0,-,-,0,0,"20,65",CRTA12
+Juros|Amortização,15/06/2040,3756.0,-,-,0,0,"21,24",CRTA12
+Juros|Amortização,15/06/2043,4500.0,-,-,0,0,"20,19",CRTA12
+Juros|Amortização,15/05/2026,251.0,-,-,0,0,"28,43",SUZBC1
+Juros|Amortização,15/05/2028,747.0,-,-,0,0,"25,53",SUZBC1
+Juros|Amortização,15/05/2029,995.0,-,-,0,0,"23,3",SUZBC1
+Juros|Amortização,15/05/2030,1242.0,-,-,0,0,"21,81",SUZBC1
+Juros|Amortização,15/05/2031,1491.0,-,-,0,0,"20,24",SUZBC1
+Juros|Amortização,15/05/2034,2241.0,-,-,0,0,"16,98",SUZBC1
+Juros|Amortização,15/05/2035,2489.0,-,-,0,0,"286,11",SUZBC1
+Juros|Amortização,15/05/2036,2736.0,-,-,0,0,"260,51",SUZBC1
+Juros|Amortização,15/03/2029,954.0,-,-,0,0,"869,15",CERT11
+Juros|Amortização,15/10/2025,109.0,-,-,0,0,"16,4",CRA Ferroeste 2ª Série
+Juros|Amortização,15/10/2026,357.0,-,-,0,0,"69,97",CRA Ferroeste 2ª Série
+Juros|Amortização,15/10/2027,605.0,-,-,0,0,"61,38",CRA Ferroeste 2ª Série
+Juros|Amortização,15/10/2028,853.0,-,-,0,0,"53,65",CRA Ferroeste 2ª Série
+Juros|Amortização,15/10/2029,1101.0,-,-,0,0,"46,91",CRA Ferroeste 2ª Série
+Juros|Amortização,15/10/2030,1350.0,-,-,0,0,"40,99",CRA Ferroeste 2ª Série
+Juros|Amortização,16/04/2026,232.0,-,-,0,0,"3,35",CRI Bem Brasil
+Juros|Amortização,16/04/2027,479.0,-,-,0,0,"2,41",CRI Bem Brasil
+Juros|Amortização,16/08/2028,813.0,-,-,0,0,"1,37",CRI Bem Brasil
+Juros|Amortização,16/08/2029,1061.0,-,-,0,0,"0,66",CRI Bem Brasil
+Juros|Amortização,16/12/2025,152.0,-,-,0,0,"3,11",CRI Bem Brasil
+Juros|Amortização,16/12/2026,399.0,-,-,0,0,"2,26",CRI Bem Brasil
+Juros|Amortização,16/12/2027,647.0,-,-,0,0,"1,45",CRI Bem Brasil
+Juros|Amortização,16/12/2030,1392.0,-,-,0,0,"34,64",CRTA12
+Juros|Amortização,16/12/2041,4131.0,-,-,0,0,"18,62",CRTA12
+Juros|Amortização,16/02/2027,437.0,-,-,0,0,"2,11",CRI Bem Brasil
+Juros|Amortização,16/02/2028,689.0,-,-,0,0,"1,43",CRI Bem Brasil
+Juros|Amortização,16/02/2029,935.0,-,-,0,0,"0,66",CRI Bem Brasil
+Juros|Amortização,16/01/2026,171.0,-,-,0,0,"3,42",CRI Bem Brasil
+Juros|Amortização,16/01/2029,914.0,-,-,0,0,"0,6",CRI Bem Brasil
+Juros|Amortização,16/07/2025,44.0,-,-,0,0,"4,25",CRI Bem Brasil
+Juros|Amortização,16/07/2026,294.0,-,-,0,0,"3,43",CRI Bem Brasil
+Juros|Amortização,16/07/2027,542.0,-,-,0,0,"2,36",CRI Bem Brasil
+Juros|Amortização,16/06/2025,23.0,-,-,0,0,"37,46",CRTA12
+Juros|Amortização,16/06/2026,272.0,-,-,0,0,"3,14",CRI Bem Brasil
+Juros|Amortização,16/06/2027,520.0,-,-,0,0,"2,16",CRI Bem Brasil
+Juros|Amortização,16/06/2028,770.0,-,-,0,0,"30,45",CRTA12
+Juros|Amortização,16/06/2031,1512.0,-,-,0,0,"25,69",CRTA12
+Juros|Amortização,16/06/2036,2757.0,-,-,0,0,"33,56",CRTA12
+Juros|Amortização,16/06/2042,4251.0,-,-,0,0,"20,54",CRTA12
+Juros|Amortização,16/05/2025,2.0,-,-,0,0,"4,1",CRI Bem Brasil
+Juros|Amortização,16/05/2028,748.0,-,-,0,0,"1,2",CRI Bem Brasil
+Juros|Amortização,16/05/2029,996.0,-,-,0,0,"0,61",CRI Bem Brasil
+Juros|Amortização,16/05/2033,1992.0,-,-,0,0,"18,45",SUZBC1
+Juros|Amortização,16/03/2027,457.0,-,-,0,0,"2,21",CRI Bem Brasil
+Juros|Amortização,16/03/2028,708.0,-,-,0,0,"1,28",CRI Bem Brasil
+Juros|Amortização,16/03/2029,955.0,-,-,0,0,"0,62",CRI Bem Brasil
+Juros|Amortização,16/11/2026,378.0,-,-,0,0,"28,87",SUZBC1
+Juros|Amortização,16/11/2027,625.0,-,-,0,0,"26,8",SUZBC1
+Juros|Amortização,16/11/2028,875.0,-,-,0,0,"25,48",SUZBC1
+Juros|Amortização,16/11/2029,1123.0,-,-,0,0,"23,84",SUZBC1
+Juros|Amortização,16/11/2032,1869.0,-,-,0,0,"19,22",SUZBC1
+Juros|Amortização,16/11/2033,2119.0,-,-,0,0,"18,12",SUZBC1
+Juros|Amortização,16/11/2034,2369.0,-,-,0,0,"17,08",SUZBC1
+Juros|Amortização,16/11/2035,2617.0,-,-,0,0,"7,99",SUZBC1
+Juros|Amortização,16/10/2025,110.0,-,-,0,0,"3,66",CRI Bem Brasil
+Juros|Amortização,16/10/2026,358.0,-,-,0,0,"2,4",CRI Bem Brasil
+Juros|Amortização,16/09/2025,88.0,-,-,0,0,"204,47",CRI Bem Brasil
+Juros|Amortização,16/09/2026,337.0,-,-,0,0,"186,53",CRI Bem Brasil
+Juros|Amortização,16/09/2027,585.0,-,-,0,0,"170,5",CRI Bem Brasil
+Juros|Amortização,17/04/2029,976.0,-,-,0,0,"0,65",CRI Bem Brasil
+Juros|Amortização,17/08/2027,564.0,-,-,0,0,"2,34",CRI Bem Brasil
+Juros|Amortização,17/12/2029,1143.0,-,-,0,0,"27,01",CRTA12
+Juros|Amortização,17/12/2035,2637.0,-,-,0,0,"32,7",CRTA12
+Juros|Amortização,17/12/2040,3882.0,-,-,0,0,"19,84",CRTA12
+Juros|Amortização,17/07/2029,1039.0,-,-,0,0,"0,63",CRI Bem Brasil
+Juros|Amortização,17/06/2025,24.0,-,-,0,0,"4,71",CRI Bem Brasil
+Juros|Amortização,17/06/2030,1265.0,-,-,0,0,"35,84",CRTA12
+Juros|Amortização,17/06/2041,4004.0,-,-,0,0,"19,89",CRTA12
+Juros|Amortização,17/05/2027,499.0,-,-,0,0,"27,05",SUZBC1
+Juros|Amortização,17/05/2032,1743.0,-,-,0,0,"19,4",SUZBC1
+Juros|Amortização,17/03/2026,211.0,-,-,0,0,"2,89",CRI Bem Brasil
+Juros|Amortização,17/11/2025,132.0,-,-,0,0,"31,82",SUZBC1
+Juros|Amortização,17/11/2026,379.0,-,-,0,0,"2,39",CRI Bem Brasil
+Juros|Amortização,17/11/2027,626.0,-,-,0,0,"1,39",CRI Bem Brasil
+Juros|Amortização,17/11/2028,876.0,-,-,0,0,"0,67",CRI Bem Brasil
+Juros|Amortização,17/11/2031,1622.0,-,-,0,0,"21,36",SUZBC1
+Juros|Amortização,17/10/2028,855.0,-,-,0,0,"0,64",CRI Bem Brasil
+Juros|Amortização,18/04/2028,730.0,-,-,0,0,"1,47",CRI Bem Brasil
+Juros|Amortização,18/08/2025,67.0,-,-,0,0,"4,85",CRI Bem Brasil
+Juros|Amortização,18/08/2026,317.0,-,-,0,0,"3,56",CRI Bem Brasil
+Juros|Amortização,18/12/2028,896.0,-,-,0,0,"0,63",CRI Bem Brasil
+Juros|Amortização,18/01/2027,418.0,-,-,0,0,"2,35",CRI Bem Brasil
+Juros|Amortização,18/01/2028,668.0,-,-,0,0,"1,58",CRI Bem Brasil
+Juros|Amortização,18/07/2028,792.0,-,-,0,0,"1,38",CRI Bem Brasil
+Juros|Amortização,18/06/2029,1018.0,-,-,0,0,"0,67",CRI Bem Brasil
+Juros|Amortização,18/05/2026,252.0,-,-,0,0,"3,17",CRI Bem Brasil
+Juros|Amortização,18/05/2027,500.0,-,-,0,0,"2,29",CRI Bem Brasil
+Juros|Amortização,18/11/2025,133.0,-,-,0,0,"3,8",CRI Bem Brasil
+Juros|Amortização,18/11/2030,1373.0,-,-,0,0,"22,83",SUZBC1
+Juros|Amortização,18/10/2027,606.0,-,-,0,0,"1,47",CRI Bem Brasil
+Juros|Amortização,18/09/2028,835.0,-,-,0,0,"155,68",CRI Bem Brasil
+Juros|Amortização,18/09/2029,1083.0,-,-,0,0,"142,14",CRI Bem Brasil
+Juros|Amortização,19/02/2026,193.0,-,-,0,0,"3,55",CRI Bem Brasil
+Juros|Amortização,19/06/2028,771.0,-,-,0,0,"1,52",CRI Bem Brasil
+Juros|Amortização,21/08/2025,70.0,-,-,0,0,"29,79",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,21/01/2026,174.0,-,-,0,0,"28,32",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,21/05/2025,5.0,-,-,0,0,"30,74",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,21/05/2026,255.0,-,-,0,0,"0,33",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,21/11/2025,135.0,-,-,0,0,"28,79",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,21/10/2025,113.0,-,-,0,0,"29,17",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,22/04/2026,235.0,-,-,0,0,"27,49",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,22/07/2025,48.0,-,-,0,0,"30,11",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,22/06/2026,276.0,-,-,0,0,"26,8",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,23/12/2025,157.0,-,-,0,0,"28,56",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,23/02/2026,195.0,-,-,0,0,"28,03",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,23/06/2025,27.0,-,-,0,0,"30,42",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,23/06/2026,277.0,-,-,0,0,"26,94",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,23/03/2026,215.0,-,-,0,0,"27,76",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,23/09/2025,93.0,-,-,0,0,"29,46",CRI Vic Engenharia 1ª Emissão
+Juros|Amortização,25/03/2026,217.0,-,-,0,0,"84,15",TBCR18
+Juros|Amortização,25/03/2027,464.0,-,-,0,0,"91,73",TBCR18
+Juros|Amortização,25/03/2030,1207.0,-,-,0,0,"72,87",TBCR18
+Juros|Amortização,25/03/2031,1457.0,-,-,0,0,"79,27",TBCR18
+Juros|Amortização,25/03/2032,1708.0,-,-,0,0,"63,5",TBCR18
+Juros|Amortização,25/09/2025,95.0,-,-,0,0,"92,97",TBCR18
+Juros|Amortização,25/09/2026,344.0,-,-,0,0,"79,21",TBCR18
+Juros|Amortização,25/09/2028,840.0,-,-,0,0,"79,4",TBCR18
+Juros|Amortização,25/09/2029,1088.0,-,-,0,0,"73,67",TBCR18
+Juros|Amortização,25/09/2030,1336.0,-,-,0,0,"89,03",TBCR18
+Juros|Amortização,25/09/2031,1585.0,-,-,0,0,"71,71",TBCR18
+Juros|Amortização,26/03/2029,961.0,-,-,0,0,"75,68",TBCR18
+Juros|Amortização,27/03/2028,715.0,-,-,0,0,"87,05",TBCR18
+Juros|Amortização,27/09/2027,592.0,-,-,0,0,"86,27",TBCR18
+Juros|Amortização,27/09/2032,1836.0,-,-,0,0,"56,6",TBCR18
+Juros|Amortização,30/04/2026,241.0,-,-,0,0,"652,08",BRFS31
+Juros|Amortização,30/10/2025,120.0,-,-,0,0,"18,5",BRFS31
 Juros,15/02/2027,442.0,0,-,0,0,"117,032364",NTN-B28
 Juros,15/02/2027,442.0,0,-,0,0,"117,509545",NTN-B30
 Juros,15/02/2027,442.0,0,-,0,0,"117,527589",NTN-B32
@@ -1235,47 +1238,3 @@ Juros,18/02/2026,196.0,0,-,0,0,"126,237282",NTN-B50
 Juros,18/02/2037,2950.0,0,-,0,0,"59,746072",NTN-B50
 Juros,19/02/2042,4204.0,0,-,0,0,"42,499129",NTN-B50
 Juros,19/02/2048,5705.0,0,-,0,0,"28,269173",NTN-B50
-Juros,15/06/2027,534,0,-,0,0,"0,0",RALM21
-Juros|Amortização,15/06/2029,1035,0,-,0,0,"44,650432",RALM21
-Juros|Amortização,15/06/2032,1787,0,-,0,0,"33,202317",RALM21
-Juros|Amortização,15/06/2033,2040,0,-,0,0,"30,524748",RALM21
-Juros|Amortização,15/06/2034,2290,0,-,0,0,"27,474496000000002",RALM21
-Juros|Amortização,15/06/2035,2539,0,-,0,0,"24,951476",RALM21
-Juros|Amortização,15/06/2037,3038,0,-,0,0,"20,247701",RALM21
-Juros|Amortização,15/06/2038,3289,0,-,0,0,"17,944349000000003",RALM21
-Juros|Amortização,15/06/2039,3540,0,-,0,0,"16,065848",RALM21
-Juros|Amortização,15/06/2040,3793,0,-,0,0,"14,498075",RALM21
-Juros|Amortização,15/06/2043,4543,0,-,0,0,"9,752935",RALM21
-Juros|Amortização,15/06/2044,4795,0,-,0,0,"8,788781",RALM21
-Juros|Amortização,15/06/2045,5045,0,-,0,0,"7,822269",RALM21
-Juros|Amortização,15/06/2046,5294,0,-,0,0,"6,9495190000000004",RALM21
-Juros|Amortização,15/06/2048,5793,0,-,0,0,"5,483612",RALM21
-Juros|Amortização,15/12/2027,661,0,-,0,0,"43,162586000000005",RALM21
-Juros|Amortização,15/12/2028,912,0,-,0,0,"44,973886",RALM21
-Juros|Amortização,15/12/2031,1663,0,-,0,0,"35,437055",RALM21
-Juros|Amortização,15/12/2032,1914,0,-,0,0,"31,774813",RALM21
-Juros|Amortização,15/12/2033,2166,0,-,0,0,"28,735022999999998",RALM21
-Juros|Amortização,15/12/2034,2416,0,-,0,0,"26,091491",RALM21
-Juros|Amortização,15/12/2036,2916,0,-,0,0,"21,760524",RALM21
-Juros|Amortização,15/12/2037,3165,0,-,0,0,"19,372992",RALM21
-Juros|Amortização,15/12/2038,3415,0,-,0,0,"16,94346",RALM21
-Juros|Amortização,15/12/2039,3667,0,-,0,0,"15,139056",RALM21
-Juros|Amortização,15/12/2042,4421,0,-,0,0,"10,33948",RALM21
-Juros|Amortização,15/12/2043,4670,0,-,0,0,"9,199341",RALM21
-Juros|Amortização,15/12/2044,4921,0,-,0,0,"8,185517",RALM21
-Juros|Amortização,15/12/2045,5171,0,-,0,0,"7,283131",RALM21
-Juros|Amortização,15/12/2048,5920,0,-,0,0,"5,061304",RALM21
-Juros|Amortização,16/06/2028,787,0,-,0,0,"47,816891999999996",RALM21
-Juros|Amortização,16/06/2031,1534,0,-,0,0,"36,205906",RALM21
-Juros|Amortização,16/06/2036,2787,0,-,0,0,"22,515572",RALM21
-Juros|Amortização,16/06/2042,4292,0,-,0,0,"10,868891",RALM21
-Juros|Amortização,16/12/2030,1412,0,-,0,0,"38,816141",RALM21
-Juros|Amortização,16/12/2041,4170,0,-,0,0,"12,24417",RALM21
-Juros|Amortização,16/12/2047,5671,0,-,0,0,"5,7565230000000005",RALM21
-Juros|Amortização,17/06/2030,1285,0,-,0,0,"40,459601",RALM21
-Juros|Amortização,17/06/2041,4043,0,-,0,0,"13,005082",RALM21
-Juros|Amortização,17/06/2047,5543,0,-,0,0,"6,208392",RALM21
-Juros|Amortização,17/12/2029,1161,0,-,0,0,"42,894225",RALM21
-Juros|Amortização,17/12/2035,2665,0,-,0,0,"23,767772",RALM21
-Juros|Amortização,17/12/2040,3919,0,-,0,0,"13,54572",RALM21
-Juros|Amortização,17/12/2046,5420,0,-,0,0,"6,461684",RALM21
