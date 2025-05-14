@@ -112,6 +112,7 @@ def make_div1_lookup() -> pd.DataFrame:
         base["Fluxo_desc"] * 0.0001 * (base["Prazo_útil"] / 252)
     )
     st.session_state["dv01_lookup"] = base[["Ativo", "DV01_UNIT"]]
+    st.write("dv01_lookup", st.session_state["dv01_lookup"])
     return st.session_state["dv01_lookup"]
 
 # ───────────────────────── FUNÇÕES DE CARGA ─────────────────────────────
@@ -130,6 +131,7 @@ def load_carteira_hoje() -> pd.DataFrame:
     if "Valor" not in df.columns:
         df["Valor"] = 0.0
     return df
+
 def load_carteira_recent() -> pd.DataFrame:
     """
     Últimos 3 meses.  Agora já volta *com* DIV1_ATIVO diário.
