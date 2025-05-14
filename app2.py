@@ -118,12 +118,14 @@ def make_div1_lookup() -> pd.DataFrame:
 def load_carteira_hoje() -> pd.DataFrame:
     """Lê carteira_hoje.parquet e devolve colunas: Data, Fundo, Ativo,
        Estratégia, Quantidade (capitalização certa)."""
-    df = (pd.read_parquet(TODAY_PARQ)
-            .rename(columns={"data":"Data",
-                             "fundo":"Fundo",
-                             "ativo":"Ativo",
-                             "estrategia":"Estratégia",
-                             "quantidade":"Quantidade"}))
+    #df = (pd.read_parquet(TODAY_PARQ)
+    #        .rename(columns={"data":"Data",
+    #                         "fundo":"Fundo",
+    #                         "ativo":"Ativo",
+    #                         "estrategia":"Estratégia",
+    #                         "quantidade":"Quantidade"}))
+    df = pd.read_excel('Dados/Relatório de Posição 2025-05-08.xlsx')
+
     # se precisar de 'Valor' em algum ponto mais à frente:
     if "Valor" not in df.columns:
         df["Valor"] = 0.0
@@ -1330,7 +1332,8 @@ def get_df_spread_ready(
     # ─────────────────────────────────────────────────────────────────────
     # 5) calcula spread, auxiliares e filtra fins-de-semana
     # --------------------------------------------------------------------
-    base["SPREAD_PP"] = base["TAX_INDIC"] - base["NTNB_YIELD"]
+    base["SPREAD_PP"] = ((1 + (base["TAX_INDIC"]/100))/ (1+ (base["NTNB_YIELD"]/100))) -1
+    base["SPREAD_PP"] = base["SPREAD_PP"] * 100 
     base["DATA_DATE"] = base["DATA_HIST"].dt.date
     base = base[base["DATA_HIST"].dt.dayofweek < 5]     # 0=seg … 4=sex
 
