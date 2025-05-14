@@ -1250,7 +1250,8 @@ def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
     base = (pd.concat(frames, ignore_index=True)
               .dropna(subset=["NTNB_YIELD"]))
 
-    base["SPREAD_PP"] = base["TAX_INDIC"] - base["NTNB_YIELD"]
+    base["SPREAD_PP"] = ((1+(base["TAX_INDIC"]/100))/(1+(base["NTNB_YIELD"]/100))) - 1
+    base["SPREAD_PP"] = base["SPREAD_PP"] * 100
     base["DATA_DATE"] = base["DATA"].dt.date  # col. auxiliar p/ comparações
 
 # ───────────────────────── helpers_spreads.py ──────────────────────────
