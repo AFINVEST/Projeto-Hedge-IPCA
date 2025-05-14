@@ -1221,7 +1221,7 @@ def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
     if "df_ntnb_long" not in st.session_state:
         st.session_state["df_ntnb_long"] = _prep_ntnb_df("BBG - ECO DASH_te.xlsx")
 
-    st.write(st.session_state["df_ntnb_long"])
+    #st.write(st.session_state["df_ntnb_long"])
     
     nt_long = st.session_state["df_ntnb_long"].copy()
     nt_long["DATA"]        = pd.to_datetime(nt_long["DATA"], errors="coerce")
