@@ -41,6 +41,7 @@ Nao_achei = ["LFSN210099R"]
 deu_ruim = ["BRFS31", 'NTN-B50', 'CRTA12', 'CPLD15',
             'CTGE11', 'LSVE39', 'SUMI37', 'SUZBC1']
 
+
 # Configurar o serviço do ChromeDriver
 # ativos = ['PEJA11', 'ASAB11']
 

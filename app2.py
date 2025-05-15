@@ -112,7 +112,6 @@ def make_div1_lookup() -> pd.DataFrame:
         base["Fluxo_desc"] * 0.0001 * (base["Prazo_útil"] / 252)
     )
     st.session_state["dv01_lookup"] = base[["Ativo", "DV01_UNIT"]]
-    st.write("dv01_lookup", st.session_state["dv01_lookup"])
     return st.session_state["dv01_lookup"]
 
 # ───────────────────────── FUNÇÕES DE CARGA ─────────────────────────────
@@ -1237,7 +1236,7 @@ def analisar_spreads_deb_b(df_posicao: pd.DataFrame) -> None:
         df_posicao[["Ativo", "Fundo","DIV1_ATIVO"]]
         .merge(lk, on="Ativo", how="left")
         .merge(tx_hist, on="Ativo", how="left")
-        .dropna(subset=["B_REF", "DATA", "TAX_INDIC"])
+        .dropna(subset=["B_REF", "DATA", "TAX_INDIC"])  
     )
 
     # merge_asof por vértice
