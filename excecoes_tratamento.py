@@ -32,6 +32,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 import selenium.webdriver as webdriver
+import locale
+
+# Define o locale temporariamente para pt_BR
+locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')  # Linux/Mac
 
 # --------------------------------------------------------------------------- #
 # 1. CONFIGURAÇÃO: basta mexer aqui                                          #
@@ -70,7 +74,7 @@ ASSETS: list[dict] = [
 
     # --------- ATIVOS CASUAIS (taxa informada manualmente) ----------------- (Manter ordem de DEB, CRI, CRA)
     dict(code_xp="SUZBC1", tab="DEB",
-         label="SUZBC1", rate_src="manual", rate=6.9721 ),
+         label="SUZBC1", rate_src="manual", rate=6.8954 ),
 
     #dict(code_xp="EQPA18", tab="DEB",
     #     label="EQPA18", rate_src="manual", rate=7.7530),
@@ -102,7 +106,6 @@ CSV_OUT = Path("Dados/deb_table_c_exc3.csv")
 # --------------------------------------------------------------------------- #
 # 2. AUXILIARES                                                               #
 # --------------------------------------------------------------------------- #
-
 
 def start_driver() -> uc.Chrome:
     opts = uc.ChromeOptions()
