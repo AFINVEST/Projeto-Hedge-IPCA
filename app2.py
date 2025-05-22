@@ -706,9 +706,9 @@ def plot_div1_layout(df: pd.DataFrame, df_div1: pd.DataFrame, carteira: pd.DataF
         df_fmt = df_sum.copy() 
         # Arredonda CONTRATOS
         df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].round().astype(int)
-        if "CARTEIRA" in df_fmt.columns:
-            df_fmt["CARTEIRA"] = df_fmt["CARTEIRA"].round().astype(int)
-            df_fmt["FALTAM"] = df_fmt["FALTAM"].round().astype(int)
+        #if "CARTEIRA" in df_fmt.columns:
+        #    df_fmt["CARTEIRA"] = df_fmt["CARTEIRA"].round().astype(int)
+        #    df_fmt["FALTAM"] = df_fmt["FALTAM"].round().astype(int)
         df_fmt.set_index("DAP", inplace=True)
 
         # Totais

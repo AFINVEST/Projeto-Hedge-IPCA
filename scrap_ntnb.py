@@ -58,6 +58,7 @@ taxas_map = {
     'NTN-B32': '7,3702',
     'NTN-B50': '7,0847'
 }
+
 try:
     driver.get(url)
     WebDriverWait(driver, 10).until(
