@@ -74,7 +74,7 @@ ASSETS: list[dict] = [
 
     # --------- ATIVOS CASUAIS (taxa informada manualmente) ----------------- (Manter ordem de DEB, CRI, CRA)
     dict(code_xp="SUZBC1", tab="DEB",
-         label="SUZBC1", rate_src="manual", rate=7.0668  ),
+         label="SUZBC1", rate_src="manual", rate=7.0007),
 
     #dict(code_xp="EQPA18", tab="DEB",
     #     label="EQPA18", rate_src="manual", rate=7.7530),
@@ -356,7 +356,7 @@ finally:
     ntnb['Valor presente'] = ntnb['Valor presente'].str.replace(
         '.', '').str.replace(',', '.').astype(float)
     # Passo 1: Traduzir 'J' e 'V' para texto completo
-    ntnb["Tipo"] = ntnb["Tipo"].map({"J": "Juros", "V": "Amortização"})
+    ntnb["Tipo"] = ntnb["Tipo"].map({"J": "Juros", "V": "Amortização", "A" : "Amortização"})
     # Passo 2: Agrupar por Data e Ativo, agregando as colunas
     df_agrupado = ntnb.groupby(["Data", "Ativo"], as_index=False).agg({
         # Ordena para Juros|Amortização
