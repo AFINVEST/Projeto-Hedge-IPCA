@@ -287,14 +287,13 @@ def _prep_spread_df(path: str | PathLike) -> tuple[pd.DataFrame, pd.DataFrame]:
     dados = pd.read_excel(path, sheet_name="Planilha2")
 
     # renomeia & filtra zeros
-    cols = ['DATA','DAP25','DAP26','DAP27','DAP28','DAP30','DAP32','DAP35','DAP40',
-            'NTNB25','NTNB26','NTNB27','NTNB28','NTNB30','NTNB32','NTNB35','NTNB40']
+    cols = ['DATA','DAP26','DAP27','DAP28','DAP30','DAP32','DAP35','DAP40','NTNB26','NTNB27','NTNB28','NTNB30','NTNB32','NTNB35','NTNB40']
     dados.columns = cols
     for c in cols[1:]:
         dados = dados[dados[c] != 0]
 
     # calcula spreads
-    for y in ["25","26","27","28","30","32","35","40"]:
+    for y in ["26","27","28","30","32","35","40"]:
         dados[f"Spread B{y}/DAP{y}"] = dados[f"NTNB{y}"] - dados[f"DAP{y}"]
     dados_diff = dados.filter(regex=r"^DATA$|^Spread").copy()
 
@@ -306,7 +305,7 @@ def _prep_spread_df(path: str | PathLike) -> tuple[pd.DataFrame, pd.DataFrame]:
     )
 
     cores = {
-        'Spread B25/DAP25': '#003366',
+        #'Spread B25/DAP25': '#003366',
         'Spread B26/DAP26': '#1f77b4',
         'Spread B27/DAP27': '#2ca02c',
         'Spread B28/DAP28': '#d62728',
