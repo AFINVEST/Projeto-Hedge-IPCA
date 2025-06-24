@@ -483,7 +483,7 @@ def obter_lista_outros_original() -> List[str]:
     return [
         "BRFS31", "CRA Ferroeste 2ª Série", "CRI Bem Brasil", "NTN-B26", "NTN-B28",
         "NTN-B30", "NTN-B32", "NTN-B50", "CRI Vic Engenharia 1ª Emissão", "TBCR18",
-        "CRTA12", "CERT11", "CRI PERNAMBUCO 35ª (23J1753853)", "CRI Vic Engenharia 2ª Emissão",
+        "CRTA12", "CERT11", "CRI PERNAMBUCO 35ª (23J1753853)", "CRI Vic Engenharia 2ª Emissão", "VALEB1"
     ]
 
 
