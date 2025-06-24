@@ -75,6 +75,8 @@ ASSETS: list[dict] = [
     # --------- ATIVOS CASUAIS (taxa informada manualmente) ----------------- (Manter ordem de DEB, CRI, CRA)
     #dict(code_xp="SUZBC1", tab="DEB",
     #     label="SUZBC1", rate_src="manual", rate=7.0007),
+    dict(code_xp="VALEB1", tab="DEB",
+         label="VALEB1", rate_src="manual", rate=8.0343),
 
     #dict(code_xp="EQPA18", tab="DEB",
     #     label="EQPA18", rate_src="manual", rate=7.7530),
