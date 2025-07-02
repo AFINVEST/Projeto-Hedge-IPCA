@@ -73,18 +73,18 @@ ASSETS: list[dict] = [
          url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=3417&codativo=CERT11"),
 
     # --------- ATIVOS CASUAIS (taxa informada manualmente) ----------------- (Manter ordem de DEB, CRI, CRA)
-    #dict(code_xp="SUZBC1", tab="DEB",
+    # dict(code_xp="SUZBC1", tab="DEB",
     #     label="SUZBC1", rate_src="manual", rate=7.0007),
     dict(code_xp="VALEB1", tab="DEB",
          label="VALEB1", rate_src="manual", rate=8.0343),
 
-    #dict(code_xp="EQPA18", tab="DEB",
+    # dict(code_xp="EQPA18", tab="DEB",
     #     label="EQPA18", rate_src="manual", rate=7.7530),
 
     # dict(code_xp="CPLD29", tab="DEB",
     #     label="CPLD29", rate_src="manual", rate=7.6122),
 
-    #dict(code_xp="AESOA1", tab="DEB",
+    # dict(code_xp="AESOA1", tab="DEB",
     #     label="AESOA1", rate_src="manual", rate=7.7596),
 
     # --------- EXCEÇÕES FIXAS (buscam taxa no site) ------------------------
@@ -108,6 +108,7 @@ CSV_OUT = Path("Dados/deb_table_c_exc3.csv")
 # --------------------------------------------------------------------------- #
 # 2. AUXILIARES                                                               #
 # --------------------------------------------------------------------------- #
+
 
 def start_driver() -> uc.Chrome:
     opts = uc.ChromeOptions()
@@ -269,6 +270,8 @@ try:
         if a["tab"] != current_tab:
             xp_select_tab(driver, a["tab"])
             current_tab = a["tab"]
+        # Minimizar a janela para evitar problemas de renderização
+        # driver.set_window_size(400, 1300)
         df_tmp = xp_calculate(driver, a["code_xp"], a["rate"])
         df_tmp["Ativo"] = a["label"]
         dfs.append(df_tmp)
@@ -358,7 +361,8 @@ finally:
     ntnb['Valor presente'] = ntnb['Valor presente'].str.replace(
         '.', '').str.replace(',', '.').astype(float)
     # Passo 1: Traduzir 'J' e 'V' para texto completo
-    ntnb["Tipo"] = ntnb["Tipo"].map({"J": "Juros", "V": "Amortização", "A" : "Amortização"})
+    ntnb["Tipo"] = ntnb["Tipo"].map(
+        {"J": "Juros", "V": "Amortização", "A": "Amortização"})
     # Passo 2: Agrupar por Data e Ativo, agregando as colunas
     df_agrupado = ntnb.groupby(["Data", "Ativo"], as_index=False).agg({
         # Ordena para Juros|Amortização
