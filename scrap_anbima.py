@@ -16,7 +16,7 @@ ativos = ['ACRC21', 'AEAB11', 'AEGP23', 'AESL17', 'AESLA5', 'AESLA7', 'AESLB7', 
 Cra = ["CRA Ferroeste 2ª Série", "CRI Bem Brasil"]
 
 df_posicao = pd.read_excel(
-    'Dados/Relatório de Posição 2025-06-23.xlsx', sheet_name='Worksheet')
+    'Dados/Relatório de Posição 2025-07-11.xlsx', sheet_name='Worksheet')
 
 df_posicao = df_posicao[df_posicao['Ativo'].isin(ativos)]
 ativos = df_posicao['Ativo'].unique()
@@ -77,7 +77,7 @@ try:
             # Clicar no botão
             button.click()
             # Aguarde para garantir que a tabela carregue após o clique
-            time.sleep(4)
+            time.sleep(2)
             # Aguardar a tabela carregar
             table_element = wait.until(EC.presence_of_element_located(
                 (By.CSS_SELECTOR, "#card-fluxo-pagamento > article > article > section > div > div > table")))
@@ -157,7 +157,7 @@ try:
                 # Clicar no botão
                 button.click()
                 # Aguarde para garantir que a tabela carregue após o clique
-                time.sleep(5)
+                time.sleep(2)
 
                 # Aguardar a tabela carregar
                 table_element = wait.until(EC.presence_of_element_located(
