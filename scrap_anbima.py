@@ -77,7 +77,7 @@ try:
             # Clicar no botão
             button.click()
             # Aguarde para garantir que a tabela carregue após o clique
-            time.sleep(2)
+            time.sleep(3)
             # Aguardar a tabela carregar
             table_element = wait.until(EC.presence_of_element_located(
                 (By.CSS_SELECTOR, "#card-fluxo-pagamento > article > article > section > div > div > table")))
@@ -151,13 +151,12 @@ try:
                     input.dispatchEvent(new Event('change', { bubbles: true }));
                 """, input_elemento, taxa_formatada)
                 input_elemento.send_keys(Keys.ENTER)
-                time.sleep(1)
                 button = wait.until(EC.element_to_be_clickable(
                     (By.CSS_SELECTOR, "#card-calcular-precificacao > article > article > section > div > form > div.col-xs-12.precificacao-content__calculate-button.col-no-padding > button")))
                 # Clicar no botão
                 button.click()
                 # Aguarde para garantir que a tabela carregue após o clique
-                time.sleep(2)
+                time.sleep(3)
 
                 # Aguardar a tabela carregar
                 table_element = wait.until(EC.presence_of_element_located(
@@ -186,7 +185,6 @@ try:
                 df_append["Ativo"] = ativos[i]
                 # Concat
                 df = pd.concat([df, df_append])
-                time.sleep(1)
             except Exception as e:
                 print(f"Erro ao extrair taxa ANBIMA: {e}")
 
