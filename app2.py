@@ -125,6 +125,7 @@ def make_div1_lookup() -> pd.DataFrame:
 
 # ───────────────────────── FUNÇÕES DE CARGA ─────────────────────────────
 
+
 def load_carteira_hoje() -> pd.DataFrame:
     """Lê carteira_hoje.parquet e devolve colunas: Data, Fundo, Ativo,
        Estratégia, Quantidade (capitalização certa)."""
@@ -134,7 +135,7 @@ def load_carteira_hoje() -> pd.DataFrame:
     #                         "ativo":"Ativo",
     #                         "estrategia":"Estratégia",
     #                         "quantidade":"Quantidade"}))
-    df = pd.read_excel('Dados/Relatório de Posição 2025-07-11.xlsx')
+    df = pd.read_excel('Dados/Relatório de Posição 2025-07-18.xlsx')
 
     # se precisar de 'Valor' em algum ponto mais à frente:
     if "Valor" not in df.columns:
