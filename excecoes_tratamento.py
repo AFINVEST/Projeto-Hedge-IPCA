@@ -78,6 +78,9 @@ ASSETS: list[dict] = [
     
     dict(code_xp="VALEB1", tab="DEB",
          label="VALEB1", rate_src="manual", rate=8.0343),
+
+    dict(code_xp ="ECHP11", tab="DEB",
+         label="ECHP11", rate_src="manual", rate=8.214500),
     
     #dict(code_xp="FBRI13", tab="DEB",
     #     label="FBRI13", rate_src="manual", rate=7.9328),
