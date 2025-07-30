@@ -1000,6 +1000,7 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
     # Filtro genérico opcional -------------------------------------------------
     df_fundo = filtro_generico(df_fundo)
+    
     # Verifica duplicidades ----------------------------------------------------
     check_duplicates(df_fundo, "Analisar Fundo")
 
