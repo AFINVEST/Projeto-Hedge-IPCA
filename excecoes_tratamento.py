@@ -260,7 +260,6 @@ def login_xp():
 # 4. EXECUÇÃO                                                                 #
 # --------------------------------------------------------------------------- #
 
-
 try:
     driver.maximize_window()
     login_afinvest()
