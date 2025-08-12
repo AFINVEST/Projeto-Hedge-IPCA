@@ -135,7 +135,7 @@ def load_carteira_hoje() -> pd.DataFrame:
     #                         "ativo":"Ativo",
     #                         "estrategia":"Estratégia",
     #                         "quantidade":"Quantidade"}))
-    df = pd.read_excel('Dados/Relatório de Posição 2025-07-28.xlsx')
+    df = pd.read_excel('Dados/Relatório de Posição 2025-08-08.xlsx')
 
     # se precisar de 'Valor' em algum ponto mais à frente:
     if "Valor" not in df.columns:
@@ -1000,7 +1000,7 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
     # Filtro genérico opcional -------------------------------------------------
     df_fundo = filtro_generico(df_fundo)
-    
+
     # Verifica duplicidades ----------------------------------------------------
     check_duplicates(df_fundo, "Analisar Fundo")
 
