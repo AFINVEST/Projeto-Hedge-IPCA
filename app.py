@@ -33,6 +33,7 @@ def process_df():
         .str.replace(',', '.')
         .astype(float)
     )
+    
     df_debentures['Amortizações'] = (
         df_debentures['Amortizações']
         .str.replace('-', '0')
