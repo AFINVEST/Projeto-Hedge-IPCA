@@ -91,8 +91,26 @@ ASSETS: list[dict] = [
     # dict(code_xp="CPLD29", tab="DEB",
     #     label="CPLD29", rate_src="manual", rate=7.6122),
 
-    # dict(code_xp="AESOA1", tab="DEB",
-    #     label="AESOA1", rate_src="manual", rate=7.7596),
+    dict(code_xp="CTEE29", tab="DEB",
+         label="CTEE29", rate_src="manual", rate=7.0119),
+
+    dict(code_xp="IGSN15", tab="DEB",
+         label="IGSN15", rate_src="manual", rate=9.2620),
+
+    dict(code_xp="HARG11", tab="DEB",
+         label="HARG11", rate_src="manual", rate=7.6698),
+
+    dict(code_xp="HBSA11", tab="DEB",
+         label="HBSA11", rate_src="manual", rate=7.9796),
+
+    dict(code_xp="HVSP11", tab="DEB",
+         label="HVSP11", rate_src="manual", rate=7.808900),
+
+    dict(code_xp="SUMI17", tab="DEB",
+         label="SUMI17", rate_src="manual", rate=9.6751),
+
+    dict(code_xp="CGOS16", tab="DEB",
+         label="CGOS16", rate_src="manual", rate=7.4127),
 
     # --------- EXCEÇÕES FIXAS (buscam taxa no site) ------------------------
     dict(code_xp="21F0189140", tab="CRI",
