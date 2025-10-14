@@ -125,7 +125,6 @@ def make_div1_lookup() -> pd.DataFrame:
 
 # ───────────────────────── FUNÇÕES DE CARGA ─────────────────────────────
 
-
 def load_carteira_hoje() -> pd.DataFrame:
     """Lê carteira_hoje.parquet e devolve colunas: Data, Fundo, Ativo,
        Estratégia, Quantidade (capitalização certa)."""
