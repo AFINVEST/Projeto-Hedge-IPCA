@@ -24,9 +24,9 @@ from plotnine import (
     scale_color_identity, geom_label
 )
 import io
-
 from os import PathLike
 # utils_posicao.py  (adicione no topo do projeto ou ao fim do script)
+
 import pandas as pd
 import datetime as dt
 import os
@@ -35,6 +35,8 @@ POS_FILE = "Dados/hist_posicoes_fundos.csv"
 CARTEIRA_DIR = Path("Dados_Carteira")  # ← pasta que você criou
 RECENT_PARQ = CARTEIRA_DIR / "carteira_recente.parquet"
 TODAY_PARQ = CARTEIRA_DIR / "carteira_hoje.parquet"
+
+#Preciso desenvolver 
 
 
 def _hoje() -> str:
@@ -135,7 +137,7 @@ def load_carteira_hoje() -> pd.DataFrame:
     #                         "ativo":"Ativo",
     #                         "estrategia":"Estratégia",
     #                         "quantidade":"Quantidade"}))
-    df = pd.read_excel('Dados/Relatório de Posição 2025-10-10.xlsx')
+    df = pd.read_excel('Dados/Relatório de Posição 2025-10-22.xlsx')
 
     # se precisar de 'Valor' em algum ponto mais à frente:
     if "Valor" not in df.columns:
@@ -174,11 +176,10 @@ def load_carteira_recent() -> pd.DataFrame:
     return df[["Data", "Fundo", "Ativo", "Estratégia",
                "Quantidade", "Valor", "DIV1_ATIVO"]]
 
+
 ###############################################################################
 # CONFIGURAÇÃO GERAL
 ###############################################################################
-
-
 st.set_page_config(
     page_title="DashHedge – Dashboard de Análise de Hedge",
     layout="wide",
@@ -662,7 +663,6 @@ def filtro_generico(df: pd.DataFrame) -> pd.DataFrame:
 ###############################################################################
 # VISUALIZAÇÕES (iguais)
 ###############################################################################
-
 
 def plot_relacao_juros(df):
     df_plot = (
