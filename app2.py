@@ -36,7 +36,7 @@ CARTEIRA_DIR = Path("Dados_Carteira")  # ← pasta que você criou
 RECENT_PARQ = CARTEIRA_DIR / "carteira_recente.parquet"
 TODAY_PARQ = CARTEIRA_DIR / "carteira_hoje.parquet"
 
-#Preciso desenvolver 
+# Preciso desenvolver
 
 
 def _hoje() -> str:
@@ -663,6 +663,7 @@ def filtro_generico(df: pd.DataFrame) -> pd.DataFrame:
 ###############################################################################
 # VISUALIZAÇÕES (iguais)
 ###############################################################################
+
 
 def plot_relacao_juros(df):
     df_plot = (
