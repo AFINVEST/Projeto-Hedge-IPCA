@@ -910,8 +910,11 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
     # ALIAS, PARA FAZER ISSO VOU CRIAR UMA NOVA TABELA EM CSV QUE VAI MAPEAR AS POSIÇÕES QUE ESTÃO SENDO FILTRADAS PRA CADA FUNDO E SALVAR O FUNDO, ATIVO, QUANTIDADE DE CADA FUNDO E SEMPRE QUE TIVER ALGUMA ANALISE DE FUNDO OLHAR ESSA TABELA PARA BUSCAR DIFERENÇAS
 
     st.header("Analisar Fundo")
+    lista = sorted(df["Fundo"].unique())
+    #Tirar o fundo "AF DEB INCENTIVADAS"
+    #lista.remove('AF DEB INCENTIVADAS')
     fundo_sel = st.sidebar.selectbox(
-        "Selecione o fundo:", sorted(df["Fundo"].unique()))
+        "Selecione o fundo:", lista)
     df_fundo = df[df["Fundo"] == fundo_sel].copy()
     # ————————————————— AVISO DE DIFERENÇAS ————————————————— #
     # diffs = comparar_posicoes(fundo_sel, df_fundo["Ativo"].unique().tolist())
@@ -2302,7 +2305,7 @@ if __name__ == "__main__":
          "Analisar Spreads"]      # ❌ removemos o item “Analisar Spreads Deb-B2”
     )
 
-    # …demais elifs …
+
 
     if modo == "Analisar Ativo":
         # assinatura original aceita apenas 2 args
