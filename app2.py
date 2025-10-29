@@ -37,8 +37,6 @@ RECENT_PARQ = CARTEIRA_DIR / "carteira_recente.parquet"
 TODAY_PARQ = CARTEIRA_DIR / "carteira_hoje.parquet"
 
 # Preciso desenvolver
-
-
 def _hoje() -> str:
     return dt.date.today().strftime("%Y-%m-%d")
 
@@ -77,7 +75,6 @@ def salvar_posicao(df_fundo: pd.DataFrame) -> None:
     hist = pd.concat([hist, base], ignore_index=True)
     hist.to_csv(POS_FILE, index=False)
 
-
 def comparar_posicoes(fundo: str, ativos_atual: list[str]) -> dict[str, list[str]]:
     """
     Devolve {'faltando':[...], 'novos':[...]} comparando curr vs lag.
@@ -87,7 +84,6 @@ def comparar_posicoes(fundo: str, ativos_atual: list[str]) -> dict[str, list[str
     falt = sorted(list(set(ant) - set(ativos_atual)))
     novos = sorted(list(set(ativos_atual) - set(ant)))
     return {"faltando": falt, "novos": novos}
-
 
 def make_div1_lookup() -> pd.DataFrame:
     """
@@ -135,7 +131,7 @@ def load_carteira_hoje() -> pd.DataFrame:
     #                         "ativo":"Ativo",
     #                         "estrategia":"Estratégia",
     #                         "quantidade":"Quantidade"}))
-    df = pd.read_excel('Dados/Relatório de Posição 2025-10-24.xlsx')
+    df = pd.read_excel('Dados/Relatório de Posição 2025-10-27.xlsx')
 
     # se precisar de 'Valor' em algum ponto mais à frente:
     if "Valor" not in df.columns:
