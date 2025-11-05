@@ -17,7 +17,7 @@ ativos = ['ACRC21', 'RALM21', 'AEAB11', 'AEGP23', 'AESL17', 'AESLA5', 'AESLA7', 
 Cra = ["CRA Ferroeste 2ª Série", "CRI Bem Brasil"]
 
 df_posicao = pd.read_excel(
-    'Dados/Relatório de Posição 2025-10-28.xlsx', sheet_name='Worksheet')
+    'Dados/Relatório de Posição 2025-11-03.xlsx', sheet_name='Worksheet')
 
 df_posicao = df_posicao[df_posicao['Ativo'].isin(ativos)]
 ativos = df_posicao['Ativo'].unique()
