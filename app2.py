@@ -131,7 +131,7 @@ def load_carteira_hoje() -> pd.DataFrame:
     #                         "ativo":"Ativo",
     #                         "estrategia":"Estratégia",
     #                         "quantidade":"Quantidade"}))
-    df = pd.read_excel('Dados/Relatório de Posição 2025-11-17.xlsx')
+    df = pd.read_excel('Dados/Relatório de Posição 2025-11-21.xlsx')
 
     # se precisar de 'Valor' em algum ponto mais à frente:
     if "Valor" not in df.columns:
@@ -702,6 +702,7 @@ def plot_div1_layout(df: pd.DataFrame, df_div1: pd.DataFrame, carteira: pd.DataF
         .merge(df_div1, on="DAP", how="left")
         .rename(columns={"DV01": "DV01_DAP"})
     )
+    
     df_sum["CONTRATOS"] = df_sum["DIV1_ATIVO"] / df_sum["DV01_DAP"]
 
     # -----------------------------------------------------------
