@@ -81,7 +81,7 @@ try:
             # Clicar no botão
             button.click()
             # Aguarde para garantir que a tabela carregue após o clique
-            time.sleep(4)
+            time.sleep(5)
             # Aguardar a tabela carregar
             table_element = wait.until(EC.presence_of_element_located(
                 (By.CSS_SELECTOR, "#card-fluxo-pagamento > article > article > section > div > div > table")))
@@ -160,7 +160,7 @@ try:
                 # Clicar no botão
                 button.click()
                 # Aguarde para garantir que a tabela carregue após o clique
-                time.sleep(4)
+                time.sleep(6)
 
                 # Aguardar a tabela carregar
                 table_element = wait.until(EC.presence_of_element_located(
