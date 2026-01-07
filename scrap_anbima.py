@@ -43,6 +43,7 @@ deu_ruim = ["BRFS31", 'NTN-B50', 'CRTA12', 'CPLD15',
 service = Service()
 driver = webdriver.Chrome(service=service)
 driver.maximize_window()
+
 # Diminuir o zoom
 driver.execute_script("document.body.style.zoom='60%'")
 # driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
