@@ -87,9 +87,11 @@ def comparar_posicoes(fundo: str, ativos_atual: list[str]) -> dict[str, list[str
 
 def make_div1_lookup() -> pd.DataFrame:
     """
+
     Lê as duas tabelas de debêntures *estáticas* (deb_table_completa2 / 3),
     devolve um lookup     Ativo | DV01_UNIT
     (é barato: ~60 ms, mas cacheamos 4 h nos session_state).
+
     """
     if "dv01_lookup" in st.session_state:
         return st.session_state["dv01_lookup"]
@@ -131,7 +133,7 @@ def load_carteira_hoje() -> pd.DataFrame:
     #                         "ativo":"Ativo",
     #                         "estrategia":"Estratégia",
     #                         "quantidade":"Quantidade"}))
-    df = pd.read_excel('Dados/Relatório de Posição 2026-01-02.xlsx')
+    df = pd.read_excel('Dados/Relatório de Posição 2026-01-09.xlsx')
 
     # se precisar de 'Valor' em algum ponto mais à frente:
     if "Valor" not in df.columns:
