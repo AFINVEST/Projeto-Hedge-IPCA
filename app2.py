@@ -739,28 +739,67 @@ def plot_div1_layout(df: pd.DataFrame, df_div1: pd.DataFrame, carteira: pd.DataF
             "<div style='border-left:2px solid rgba(49,51,63,0.2);height:60vh;margin:auto'></div>")
 
     with col3:
+        #df_fmt = df_sum.copy()
+        ## Arredonda CONTRATOS
+        #df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].round().astype(int)
+        ## if "CARTEIRA" in df_fmt.columns:
+        ##    df_fmt["CARTEIRA"] = df_fmt["CARTEIRA"].round().astype(int)
+        ##    df_fmt["FALTAM"] = df_fmt["FALTAM"].round().astype(int)
+        #df_fmt.set_index("DAP", inplace=True)
+#
+        ## Totais
+        #totais = df_fmt.sum(numeric_only=True)
+        #df_fmt.loc["Total"] = totais
+#
+        ## Formatação
+        #sty = df_fmt.style.format("{:,.0f}")
+        #sty = sty.set_table_styles([
+        #    {"selector": "th", "props": [
+        #        ("font-weight", "bold"), ("text-align", "center")]},
+        #    {"selector": "td", "props": [("text-align", "right")]},
+        #    {"selector": "caption", "props": [
+        #        ("font-size", "16px"), ("font-weight", "bold")]},
+        #])
+        #st.table(sty.set_caption("Tabela de DAPs: Necessário × Carteira"))
         df_fmt = df_sum.copy()
-        # Arredonda CONTRATOS
-        df_fmt["CONTRATOS"] = df_fmt["CONTRATOS"].round().astype(int)
-        # if "CARTEIRA" in df_fmt.columns:
-        #    df_fmt["CARTEIRA"] = df_fmt["CARTEIRA"].round().astype(int)
-        #    df_fmt["FALTAM"] = df_fmt["FALTAM"].round().astype(int)
         df_fmt.set_index("DAP", inplace=True)
 
-        # Totais
+        # Totais (sem arredondar)
         totais = df_fmt.sum(numeric_only=True)
         df_fmt.loc["Total"] = totais
 
-        # Formatação
-        sty = df_fmt.style.format("{:,.0f}")
-        sty = sty.set_table_styles([
-            {"selector": "th", "props": [
-                ("font-weight", "bold"), ("text-align", "center")]},
-            {"selector": "td", "props": [("text-align", "right")]},
-            {"selector": "caption", "props": [
-                ("font-size", "16px"), ("font-weight", "bold")]},
-        ])
-        st.table(sty.set_caption("Tabela de DAPs: Necessário × Carteira"))
+        # ===== TABELA =====
+        sty = (
+            df_fmt.style
+            .format({
+                "DIV1_ATIVO": "{:,.4f}",
+                "DV01_DAP": "{:,.6f}",
+                "CONTRATOS": "{:,.4f}",
+                "CARTEIRA": "{:,.4f}",
+                "FALTAM": "{:,.4f}",
+            })
+            .set_table_styles([
+                {"selector": "th", "props": [("font-weight", "bold"), ("text-align", "center")]},
+                {"selector": "td", "props": [("text-align", "right")]},
+            ])
+        )
+
+        st.table(sty)
+
+        # ===== EXPORTAÇÃO EXCEL =====
+        def _to_excel_bytes(df: pd.DataFrame) -> bytes:
+            buf = io.BytesIO()
+            with pd.ExcelWriter(buf, engine="openpyxl") as writer:
+                df.to_excel(writer, sheet_name="DAP_DIV1", merge_cells=False)
+            return buf.getvalue()
+
+        st.download_button(
+            label="📥 Baixar tabela em Excel",
+            data=_to_excel_bytes(df_fmt),
+            file_name="tabela_dap_div1.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
 
     # Retorna apenas DAP/CONTRATOS (p/ rotina de salvar posição)
     return df_sum[["DAP", "CONTRATOS"]].set_index("DAP")
