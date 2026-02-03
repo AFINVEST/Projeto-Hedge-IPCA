@@ -1,20 +1,14 @@
-# DashHedge_rev.py – revisão 2025‑04‑29
-# -----------------------------------------------------------------------------
-# ▸ NOVO: Contagem de contratos DAP já existentes (df_posicao) para cruzar com
-#         a quantidade necessária calculada via DV01.
-# ▸ Abrange visões "Analisar Fundo" e "Análise Geral".
-# ▸ Mantém toda a lógica anterior – adições estão claramente marcadas com
-#         «### DAP …» para facilitar busca.
+# DashHedge_rev.py 
 # -----------------------------------------------------------------------------
 from typing import List
 import plotly.graph_objects as go
 from datetime import datetime
-from pathlib import Path                # ➊  (caso ainda não exista no import)
+from pathlib import Path               
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go  # reservado para uso futuro
+import plotly.graph_objects as go  
 import re
 import io
 from typing import Dict, List, Tuple
@@ -23,11 +17,10 @@ from plotnine import (
     scale_fill_manual, geom_text, geom_line, geom_point,
     scale_color_identity, geom_label
 )
+
 import io
 from os import PathLike
-# utils_posicao.py  (adicione no topo do projeto ou ao fim do script)
 
-import pandas as pd
 import datetime as dt
 import os
 
@@ -75,6 +68,7 @@ def salvar_posicao(df_fundo: pd.DataFrame) -> None:
     hist = pd.concat([hist, base], ignore_index=True)
     hist.to_csv(POS_FILE, index=False)
 
+
 def comparar_posicoes(fundo: str, ativos_atual: list[str]) -> dict[str, list[str]]:
     """
     Devolve {'faltando':[...], 'novos':[...]} comparando curr vs lag.
@@ -84,6 +78,7 @@ def comparar_posicoes(fundo: str, ativos_atual: list[str]) -> dict[str, list[str
     falt = sorted(list(set(ant) - set(ativos_atual)))
     novos = sorted(list(set(ativos_atual) - set(ant)))
     return {"faltando": falt, "novos": novos}
+
 
 def make_div1_lookup() -> pd.DataFrame:
     """
@@ -123,28 +118,34 @@ def make_div1_lookup() -> pd.DataFrame:
     st.session_state["dv01_lookup"] = base[["Ativo", "DV01_UNIT"]]
     return st.session_state["dv01_lookup"]
 
+
 # ───────────────────────── FUNÇÕES DE CARGA ─────────────────────────────
 def load_carteira_hoje() -> pd.DataFrame:
     """Lê carteira_hoje.parquet e devolve colunas: Data, Fundo, Ativo,
        Estratégia, Quantidade (capitalização certa)."""
+    
     # df = (pd.read_parquet(TODAY_PARQ)
     #        .rename(columns={"data":"Data",
     #                         "fundo":"Fundo",
     #                         "ativo":"Ativo",
     #                         "estrategia":"Estratégia",
     #                         "quantidade":"Quantidade"}))
-    df = pd.read_excel('Dados/Relatório de Posição 2026-01-09.xlsx')
+
+    df = pd.read_excel('Dados/Relatório de Posição 2026-01-26.xlsx')
 
     # se precisar de 'Valor' em algum ponto mais à frente:
     if "Valor" not in df.columns:
         df["Valor"] = 0.0
+    
     return df
 
 
 def load_carteira_recent() -> pd.DataFrame:
+
     """
     Últimos 3 meses.  Agora já volta *com* DIV1_ATIVO diário.
     """
+
     df = pd.read_parquet(RECENT_PARQ).rename(columns={
         "data": "Data", "fundo": "Fundo", "ativo": "Ativo",
         "estrategia": "Estratégia", "quantidade": "Quantidade"
@@ -235,7 +236,6 @@ def process_dap_counts(df_posicao_raw: pd.DataFrame) -> Tuple[pd.DataFrame, pd.D
 ################################################################################
 # FUNÇÕES DE CARGA / PROCESSAMENTO (bases originais + DAP extra)
 ################################################################################
-
 
 def _prep_spread_df2(path: str | PathLike) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
@@ -375,7 +375,7 @@ def _prep_ntnb_df(path: str | PathLike) -> pd.DataFrame:
 
 
 if "df_ntnb_long" not in st.session_state:
-    st.session_state["df_ntnb_long"] = _prep_ntnb_df("BBG - ECO DASH_te.xlsx")
+    st.session_state["df_ntnb_long"] = _prep_ntnb_df("Dados/BBG - ECO DASH_te.xlsx")
 
 
 def process_df() -> pd.DataFrame:
@@ -533,12 +533,6 @@ def obter_dap_dict_original() -> Dict[int, str]:
 ###############################################################################
 # UTILITÁRIOS DE UI (sem alterações exceto import CSS)
 ###############################################################################
-# ... (o restante das funções check_duplicates, filtro_generico, etc. permanecem
-# inalteradas – suprimidas aqui por brevidade, mas integram o arquivo completo)
-###############################################################################
-# VISUALIZAÇÕES – ATUALIZAÇÃO PARA TRAZER DAP CARTEIRA
-###############################################################################
-
 
 _B_MAP = {   # = mesmo critério que você usa p/ DAPs
     2025: 'B25', 2026: 'B26', 2027: 'B27', 2028: 'B28', 2029: 'B29',
@@ -570,7 +564,7 @@ def _to_B_ref(s: str | float | pd.Timestamp) -> str | None:
     if pd.notna(data):
         ano = data.year
         return _B_MAP.get(ano)
-
+    
     return None                  # não conseguiu limpar
 
 
@@ -659,7 +653,6 @@ def filtro_generico(df: pd.DataFrame) -> pd.DataFrame:
 ###############################################################################
 # VISUALIZAÇÕES (iguais)
 ###############################################################################
-
 
 def plot_relacao_juros(df):
     df_plot = (
@@ -800,7 +793,6 @@ def plot_div1_layout(df: pd.DataFrame, df_div1: pd.DataFrame, carteira: pd.DataF
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
 
-
     # Retorna apenas DAP/CONTRATOS (p/ rotina de salvar posição)
     return df_sum[["DAP", "CONTRATOS"]].set_index("DAP")
 
@@ -856,7 +848,6 @@ def atualizar_session_state_contratos(fundo: str, df_contr: pd.DataFrame):
                            file_name="posicoes_por_fundo.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
-###############################################################################
 ###############################################################################
 # FUNÇÕES DE PÁGINA – AJUSTES PARA PASSAR CONTAGEM CARTEIRA
 ###############################################################################
@@ -944,16 +935,16 @@ def analisar_ativo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
 
 def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
-    # ADICIONAR NESSA FUNÇÃO UMA FORMA DE LER OS ATIVOS PRESENTES NO FUNDO NO RELATÓRIO DE POSIÇÃO DO DIA ANTERIOR E AVISAR PARA O USUÁRIO SE TIVER ALGUM ATIVO QUE NÃO ESTEJA NA BASE ATUAL OU NÃO ANTIGA
-    # ALIAS, PARA FAZER ISSO VOU CRIAR UMA NOVA TABELA EM CSV QUE VAI MAPEAR AS POSIÇÕES QUE ESTÃO SENDO FILTRADAS PRA CADA FUNDO E SALVAR O FUNDO, ATIVO, QUANTIDADE DE CADA FUNDO E SEMPRE QUE TIVER ALGUMA ANALISE DE FUNDO OLHAR ESSA TABELA PARA BUSCAR DIFERENÇAS
 
     st.header("Analisar Fundo")
     lista = sorted(df["Fundo"].unique())
     #Tirar o fundo "AF DEB INCENTIVADAS"
     #lista.remove('AF DEB INCENTIVADAS')
+
     fundo_sel = st.sidebar.selectbox(
         "Selecione o fundo:", lista)
     df_fundo = df[df["Fundo"] == fundo_sel].copy()
+
     # ————————————————— AVISO DE DIFERENÇAS ————————————————— #
     # diffs = comparar_posicoes(fundo_sel, df_fundo["Ativo"].unique().tolist())
     # if diffs["faltando"]:
@@ -1003,6 +994,7 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
             # dados["Fundo"] = fundo_sel                    # destino final
             df_fundo = pd.concat([df_fundo, dados], ignore_index=True)
+
     # Simulador de quantidades -------------------------------------------------
     if ativos_filt:
         st.sidebar.markdown("### Simular novas quantidades")
@@ -1020,6 +1012,7 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
             df_fundo["DIV1_ATIVO"] = df_fundo["Juros projetados"] * \
                 0.0001 * (df_fundo["Prazos (dias úteis)"] / 252)
             st.success("Novas quantidades aplicadas!")
+
     else:
         if novos_ativos:
             st.sidebar.markdown("### Simular novas quantidades")
@@ -1056,7 +1049,6 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
     df_contr = plot_div1_layout(df_fundo, df_div1, carteira_fundo)
     atualizar_session_state_contratos(fundo_sel, df_contr)
 
-    # … (opção de mostrar base do fundo permanece)
 
 
 def analisar_geral(df: pd.DataFrame, df_div1: pd.DataFrame):
@@ -1101,10 +1093,10 @@ def analisar_geral(df: pd.DataFrame, df_div1: pd.DataFrame):
 
     if st.sidebar.checkbox("Mostrar base consolidada"):
         st.dataframe(df_sel)
-        # Colocar um aviso de os ativos fora da cartera foram atualizados com as taxas do dia 25 de abril
+        # Colocar um aviso de os ativos fora da cartera foram atualizados com as taxas do dia 27 de novembro
         if "SEM FUNDO" in df_sel["Fundo"].unique():
             st.warning(
-                "Ativos fora da carteira foram atualizados com as taxas do dia 25 de abril.")
+                "Ativos fora da carteira foram atualizados com as taxas do dia 27 de novembro.")
 
 
 def analisar_spreads() -> None:
@@ -1115,7 +1107,7 @@ def analisar_spreads() -> None:
 
     # ▸ carrega uma vez -----------------------------------------------------
     if "df_spread_melt" not in st.session_state:
-        df_melt_tmp, df_vert_tmp = _prep_spread_df("BBG - ECO DASH_te.xlsx")
+        df_melt_tmp, df_vert_tmp = _prep_spread_df("Dados/BBG - ECO DASH_te.xlsx")
         st.session_state["df_spread_melt"] = df_melt_tmp
         st.session_state["df_spread_vert"] = df_vert_tmp
 
@@ -1348,6 +1340,7 @@ def get_df_spread_ready(
         df_ntnb:    pd.DataFrame,
         df_lookup:  pd.DataFrame
 ) -> pd.DataFrame:
+    
     """
     Constrói a base completa para todos os gráficos de *Spreads Deb-B*.
 
@@ -1437,8 +1430,6 @@ def get_df_spread_ready(
     return base[cols_core + outras]
 
 # ───────────────────── páginas / análise Spreads Deb-B ─────────────────────
-
-
 def analisar_spreads_deb_b2(_: pd.DataFrame) -> None:
     """Usa df pronto em cache (não importa parâmetro enviado)."""
 
@@ -1453,7 +1444,6 @@ def analisar_spreads_deb_b2(_: pd.DataFrame) -> None:
         )
 
     # 2. mini-gráficos -------------------------------------------------------
-
     def grafico_ativos(df: pd.DataFrame) -> None:
         st.subheader("Gráfico 1 – Spread por Ativo")
         ativos_disp = sorted(df["Ativo_up"].unique())
@@ -1475,7 +1465,6 @@ def analisar_spreads_deb_b2(_: pd.DataFrame) -> None:
         st.plotly_chart(fig, use_container_width=True)
 
         # ▼ tabela opcional ----------------------------------------------------
-        # ▼ tabela opcional ----------------------------------------------------
         if st.checkbox("Mostrar dados do gráfico (Ativos)"):
             cols_show = ["DATA", "Ativo_up", "B_REF",
                          "TAX_INDIC", "NTNB_YIELD", "SPREAD_PP"]
@@ -1485,7 +1474,7 @@ def analisar_spreads_deb_b2(_: pd.DataFrame) -> None:
                 .drop_duplicates(subset=["Ativo_up", "DATA", "B_REF"])
                 .rename(columns={"Ativo_up": "Ativo"})
                 .assign(DATA=lambda d: d["DATA"].dt.strftime("%Y-%m-%d"))
-                # ❶ índice único (MultiIndex)
+                # índice único (MultiIndex)
                 .set_index(["DATA", "Ativo"])
                 .sort_index()
             )
@@ -1523,6 +1512,7 @@ def analisar_spreads_deb_b2(_: pd.DataFrame) -> None:
                 file_name="spreads_ativos.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
+    
 
     def grafico_vertices_fundo(df: pd.DataFrame) -> None:
         st.subheader("Gráfico 2 – Spread do Fundo por Vértice")
@@ -1675,7 +1665,7 @@ def _load_tx_hist():
 
 @st.cache_data
 def _load_ntnb_long():
-    return _prep_ntnb_df("BBG - ECO DASH_te.xlsx")
+    return _prep_ntnb_df("Dados/BBG - ECO DASH_te.xlsx")
 
 
 def _load_ntnb_for_date(d):
@@ -2031,7 +2021,7 @@ def analisar_spreads_por_fundo(df_posicao_juros: pd.DataFrame):
 
     # ══════════════ 2) OBTÉM SPREADS ORIGINAIS (já no session_state) ═══════
     if "df_spread_melt" not in st.session_state:
-        dfm, dfv = _prep_spread_df("BBG - ECO DASH_te.xlsx")
+        dfm, dfv = _prep_spread_df("Dados/BBG - ECO DASH_te.xlsx")
         st.session_state["df_spread_melt"] = dfm
         st.session_state["df_spread_vert"] = dfv
 

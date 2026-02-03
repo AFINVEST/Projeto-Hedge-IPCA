@@ -1,8 +1,15 @@
-streamlit
-numpy
-pandas
-matplotlib
-seaborn
-openpyxl
-plotly
-plotnine
+# App / dashboard
+streamlit>=1.32
+pandas>=2.0
+numpy>=1.23
+plotly>=5.18
+openpyxl>=3.1
+pyarrow>=14.0
+
+# Gráficos (ggplot-like)
+plotnine>=0.12
+
+# (somente para o "código de atualização" com Selenium/BS4)
+selenium>=4.15
+beautifulsoup4>=4.12
+

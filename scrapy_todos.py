@@ -33,7 +33,6 @@ Cra = ["CRA Ferroeste 2ª Série", "CRI Bem Brasil"]
 
 # ativos = ativos_para_scrape
 # print(f'Ativos para scrape: {ativos}')
-# ANALISAR SE O AESO1 ESTÁ INDO
 
 
 Nao_achei = ["LFSN210099R"]
