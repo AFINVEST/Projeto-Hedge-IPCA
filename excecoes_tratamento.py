@@ -60,17 +60,17 @@ ASSETS: list[dict] = [
          label="BRFS31", rate_src="scrape",
          url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=6410&codativo=BRFS31"),
 
-    dict(code_xp="CRTA12", tab="DEB",
-         label="CRTA12", rate_src="scrape",
-         url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=9358&codativo=CRTA12"),
+    #dict(code_xp="CRTA12", tab="DEB",
+    #     label="CRTA12", rate_src="scrape",
+    #     url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=9358&codativo=CRTA12"),
 
-    dict(code_xp="TBCR18", tab="DEB",
-         label="TBCR18", rate_src="scrape",
-         url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=3417&codativo=TBCR18"),
+    #dict(code_xp="TBCR18", tab="DEB",
+    #     label="TBCR18", rate_src="scrape",
+    #     url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=3417&codativo=TBCR18"),
 
-    dict(code_xp="CERT11", tab="DEB",
-         label="CERT11", rate_src="scrape",
-         url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=3417&codativo=CERT11"),
+    #dict(code_xp="CERT11", tab="DEB",
+    #     label="CERT11", rate_src="scrape",
+    #     url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=3417&codativo=CERT11"),
 
     # --------- ATIVOS CASUAIS (taxa informada manualmente) ----------------- (Manter ordem de DEB, CRI, CRA)
     #dict(code_xp="ENMTB3", tab="DEB",
