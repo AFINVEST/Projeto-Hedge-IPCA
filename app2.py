@@ -29,7 +29,20 @@ CARTEIRA_DIR = Path("Dados_Carteira")  # ← pasta que você criou
 RECENT_PARQ = CARTEIRA_DIR / "carteira_recente.parquet"
 TODAY_PARQ = CARTEIRA_DIR / "carteira_hoje.parquet"
 
-# Preciso desenvolver
+
+
+def load_carteira_hoje() -> pd.DataFrame:
+    """Lê carteira_hoje.parquet e devolve colunas: Data, Fundo, Ativo,
+       Estratégia, Quantidade (capitalização certa)."""
+    
+    df = pd.read_excel('Dados/Relatório de Posição 2026-01-30.xlsx')
+
+    if "Valor" not in df.columns:
+        df["Valor"] = 0.0
+    
+    return df
+
+
 def _hoje() -> str:
     return dt.date.today().strftime("%Y-%m-%d")
 
@@ -120,24 +133,7 @@ def make_div1_lookup() -> pd.DataFrame:
 
 
 # ───────────────────────── FUNÇÕES DE CARGA ─────────────────────────────
-def load_carteira_hoje() -> pd.DataFrame:
-    """Lê carteira_hoje.parquet e devolve colunas: Data, Fundo, Ativo,
-       Estratégia, Quantidade (capitalização certa)."""
-    
-    # df = (pd.read_parquet(TODAY_PARQ)
-    #        .rename(columns={"data":"Data",
-    #                         "fundo":"Fundo",
-    #                         "ativo":"Ativo",
-    #                         "estrategia":"Estratégia",
-    #                         "quantidade":"Quantidade"}))
 
-    df = pd.read_excel('Dados/Relatório de Posição 2026-01-26.xlsx')
-
-    # se precisar de 'Valor' em algum ponto mais à frente:
-    if "Valor" not in df.columns:
-        df["Valor"] = 0.0
-    
-    return df
 
 
 def load_carteira_recent() -> pd.DataFrame:
@@ -954,11 +950,21 @@ def analisar_fundo(df: pd.DataFrame, df_div1: pd.DataFrame):
 
     # Filtro de ativos internos ------------------------------------------------
     ativos_fundo = sorted(df_fundo["Ativo"].unique())
+    st.sidebar.markdown("### Ativos do fundo")
     ativos_filt = st.sidebar.multiselect(
-        "Filtrar ativos do fundo:", ativos_fundo, default=None)
-    if not ativos_filt:
+    "Filtrar ativos do fundo:", ativos_fundo, default=None)
+
+    selecionar_todos = st.sidebar.checkbox(
+        "Selecionar todos", value=True)
+
+    if selecionar_todos:
         ativos_filt2 = ativos_fundo
     else:
+        ativos_filt = st.sidebar.multiselect(
+            "Escolha os ativos:",
+            ativos_fundo,
+            default=ativos_fundo[:min(5, len(ativos_fundo))]  # opcional
+        )
         ativos_filt2 = ativos_filt
     df_fundo = df_fundo[df_fundo["Ativo"].isin(ativos_filt2)]
 

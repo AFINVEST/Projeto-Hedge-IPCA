@@ -38,17 +38,14 @@ ativos = (
 Cra = ["CRA Ferroeste 2ª Série", "CRI Bem Brasil"]
 
 df_posicao = pd.read_excel(
-    'Dados/Relatório de Posição 2026-01-26.xlsx', sheet_name='Worksheet'
+    'Dados/Relatório de Posição 2026-02-04.xlsx', sheet_name='Worksheet'
 )
 
 df_posicao = df_posicao[df_posicao['Ativo'].isin(ativos)]
 ativos = df_posicao['Ativo'].unique()
 ativos = ativos.tolist()
 
-Nao_achei = ["LFSN210099R"]
-
-deu_ruim = ["BRFS31", 'NTN-B50', 'CRTA12', 'CPLD15',
-            'CTGE11', 'LSVE39', 'SUMI37', 'SUZBC1']
+deu_ruim = ["BRFS31"]
 
 # =========================================================
 # FUNÇÕES (BACKUP / PREENCHIMENTO ATIVO)
