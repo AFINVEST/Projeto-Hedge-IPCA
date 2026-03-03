@@ -38,7 +38,7 @@ ativos = (
 Cra = ["CRA Ferroeste 2ª Série", "CRI Bem Brasil"]
 
 df_posicao = pd.read_excel(
-    'Dados/Relatório de Posição 2026-02-05.xlsx', sheet_name='Worksheet'
+    'Dados/Relatório de Posição 2026-02-26.xlsx', sheet_name='Worksheet'
 )
 
 df_posicao = df_posicao[df_posicao['Ativo'].isin(ativos)]
@@ -47,9 +47,13 @@ ativos = ativos.tolist()
 
 deu_ruim = ["BRFS31"]
 
+ativos = [ativo for ativo in ativos if ativo not in deu_ruim]
+
 # =========================================================
 # FUNÇÕES (BACKUP / PREENCHIMENTO ATIVO)
 # =========================================================
+
+
 def _norm_str(x):
     # normaliza valores para comparação de chave
     if pd.isna(x):
@@ -61,9 +65,11 @@ def _norm_str(x):
     s = " ".join(s.split())
     return s
 
+
 def _build_key(row, key_cols):
     # chave determinística baseada em TODAS as colunas exceto 'Ativo'
     return tuple(_norm_str(row.get(c, "")) for c in key_cols)
+
 
 def preencher_ativo_com_backup(df_atual, backup_path):
     """
@@ -75,7 +81,8 @@ def preencher_ativo_com_backup(df_atual, backup_path):
     try:
         backup_path = Path(backup_path)
         if not backup_path.exists():
-            print(f"[BACKUP] Arquivo não existe, nada a preencher: {backup_path}")
+            print(
+                f"[BACKUP] Arquivo não existe, nada a preencher: {backup_path}")
             return df_atual
 
         df_backup = pd.read_csv(backup_path)
@@ -92,7 +99,8 @@ def preencher_ativo_com_backup(df_atual, backup_path):
         # chave = todas as colunas do df_atual exceto 'Ativo'
         key_cols = [c for c in df_atual.columns if c != "Ativo"]
         if len(key_cols) == 0:
-            print("[BACKUP] Não há colunas suficientes para criar chave (exceto 'Ativo').")
+            print(
+                "[BACKUP] Não há colunas suficientes para criar chave (exceto 'Ativo').")
             return df_atual
 
         # cria mapa: key -> Ativo (preferindo Ativo não vazio)
@@ -126,7 +134,8 @@ def preencher_ativo_com_backup(df_atual, backup_path):
 
         print(f"[BACKUP] Linhas preenchidas a partir do backup: {preenchidos}")
         if preenchidos < qtd_vazios:
-            print(f"[BACKUP] ATENÇÃO: {qtd_vazios - preenchidos} linhas permaneceram com 'Ativo' vazio (sem match no backup).")
+            print(
+                f"[BACKUP] ATENÇÃO: {qtd_vazios - preenchidos} linhas permaneceram com 'Ativo' vazio (sem match no backup).")
 
         return df_atual
 
@@ -230,7 +239,8 @@ try:
                 taxa_texto = taxa_elemento.text
 
                 # Remove o símbolo de porcentagem e converte para número
-                taxa_valor = float(taxa_texto.replace(" %", "").replace(",", "."))
+                taxa_valor = float(taxa_texto.replace(
+                    " %", "").replace(",", "."))
 
                 # Armazena o valor da taxa
                 print(f"Taxa ANBIMA encontrada: {taxa_valor}")
