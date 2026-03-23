@@ -35,7 +35,7 @@ def load_carteira_hoje() -> pd.DataFrame:
     """Lê carteira_hoje.parquet e devolve colunas: Data, Fundo, Ativo,
        Estratégia, Quantidade (capitalização certa)."""
     
-    df = pd.read_excel('Dados/Relatório de Posição 2026-02-26.xlsx')
+    df = pd.read_excel('Dados/Relatório de Posição 2026-03-19.xlsx')
 
     if "Valor" not in df.columns:
         df["Valor"] = 0.0

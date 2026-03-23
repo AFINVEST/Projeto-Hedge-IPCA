@@ -25,12 +25,12 @@ import pandas as pd
 import pandas_market_calendars as mcal
 from bs4 import BeautifulSoup
 
-import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.remote.webdriver import WebDriver
 import selenium.webdriver as webdriver
 import locale
 
@@ -135,17 +135,17 @@ CSV_OUT = Path("Dados/deb_table_c_exc3.csv")
 # --------------------------------------------------------------------------- #
 
 
-def start_driver() -> uc.Chrome:
-    opts = uc.ChromeOptions()
+def start_driver() -> WebDriver:
+    opts = webdriver.ChromeOptions()
     opts.add_argument("--window-size=1600,1000")
-    return uc.Chrome(options=opts)
+    return webdriver.Chrome(options=opts)
 
 
 def wait_click(wd, locator, t=15):
     WebDriverWait(wd, t).until(EC.element_to_be_clickable(locator)).click()
 
 
-def scrape_rate(driver: uc.Chrome, url: str, max_try: int = 10) -> float:
+def scrape_rate(driver: WebDriver, url: str, max_try: int = 10) -> float:
     """
     Faz scrape da taxa na página interna da AFinvest.
 
@@ -189,14 +189,14 @@ def scrape_rate(driver: uc.Chrome, url: str, max_try: int = 10) -> float:
         f"Não foi possível capturar a taxa em '{url}' após {max_try} tentativas.")
 
 
-def xp_select_tab(driver: uc.Chrome, tab: str):
+def xp_select_tab(driver: WebDriver, tab: str):
     """tab ∈ {'DEB','CRI','CRA'}"""
     tab_map = {"DEB": "DEBENTURE", "CRI": "CRI", "CRA": "CRA"}
     testid = tab_map[tab]
     wait_click(driver, (By.XPATH, f"//button[@data-testid='{testid}']"))
 
 
-def xp_calculate(driver: uc.Chrome, code: str, rate: float) -> pd.DataFrame:
+def xp_calculate(driver: WebDriver, code: str, rate: float) -> pd.DataFrame:
     input_id = {
         "DEB": "react-select-2-input",
         "CRI": "react-select-3-input",
@@ -245,7 +245,7 @@ def xp_calculate(driver: uc.Chrome, code: str, rate: float) -> pd.DataFrame:
 # --------------------------------------------------------------------------- #
 
 
-driver = webdriver.Chrome()
+driver = start_driver()
 
 
 def login_afinvest():
