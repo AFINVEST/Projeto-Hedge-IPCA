@@ -38,7 +38,7 @@ ativos = (
 Cra = ["CRA Ferroeste 2ª Série", "CRI Bem Brasil"]
 
 df_posicao = pd.read_excel(
-    'Dados/Relatório de Posição 2026-03-19.xlsx', sheet_name='Worksheet'
+    'Dados/Relatório de Posição 2026-04-08.xlsx', sheet_name='Worksheet'
 )
 
 df_posicao = df_posicao[df_posicao['Ativo'].isin(ativos)]

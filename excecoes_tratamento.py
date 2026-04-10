@@ -64,9 +64,9 @@ ASSETS: list[dict] = [
     #     label="CRTA12", rate_src="scrape",
     #     url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=9358&codativo=CRTA12"),
 
-    #dict(code_xp="TBCR18", tab="DEB",
-    #     label="TBCR18", rate_src="scrape",
-    #     url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=3417&codativo=TBCR18"),
+    dict(code_xp="TBCR18", tab="DEB",
+         label="TBCR18", rate_src="scrape",
+         url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=3417&codativo=TBCR18"),
 
     #dict(code_xp="CERT11", tab="DEB",
     #     label="CERT11", rate_src="scrape",
