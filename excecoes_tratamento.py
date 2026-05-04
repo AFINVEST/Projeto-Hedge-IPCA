@@ -56,9 +56,9 @@ LOGIN_XP = ("bruno.veloso@afinvest.com.br", "Afs@2023")
 ASSETS: list[dict] = [
 
     # --------- EXCEÇÕES FIXAS (buscam taxa no site) ------------------------
-    dict(code_xp="BRFS31", tab="DEB",
-         label="BRFS31", rate_src="scrape",
-         url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=6410&codativo=BRFS31"),
+    #dict(code_xp="BRFS31", tab="DEB",
+    #     label="BRFS31", rate_src="scrape",
+    #     url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=6410&codativo=BRFS31"),
 
     #dict(code_xp="CRTA12", tab="DEB",
     #     label="CRTA12", rate_src="scrape",
