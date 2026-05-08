@@ -11,7 +11,7 @@ import time
 from selenium.webdriver.common.action_chains import ActionChains
 
 
-ARQUIVO_EXCEL = "Dados/debentures-precos-05-02-2026-19-47-15.xlsx"
+ARQUIVO_EXCEL = "Dados/debentures-precos-07-05-2026-20-02-31.xlsx"
 
 df = pd.read_excel(ARQUIVO_EXCEL)
 

@@ -11,7 +11,7 @@ import time
 from selenium.webdriver.common.action_chains import ActionChains
 from pathlib import Path
 
-ARQUIVO_EXCEL = "Dados/debentures-precos-05-02-2026-19-47-15.xlsx"
+ARQUIVO_EXCEL = "Dados/debentures-precos-07-05-2026-20-02-31.xlsx"
 
 df = pd.read_excel(ARQUIVO_EXCEL)
 
@@ -38,7 +38,7 @@ ativos = (
 Cra = ["CRA Ferroeste 2ª Série", "CRI Bem Brasil"]
 
 df_posicao = pd.read_excel(
-    'Dados/Relatório de Posição 2026-04-29.xlsx', sheet_name='Worksheet'
+    'Dados/Relatório de Posição 2026-05-04.xlsx', sheet_name='Worksheet'
 )
 
 df_posicao = df_posicao[df_posicao['Ativo'].isin(ativos)]
