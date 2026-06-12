@@ -113,9 +113,9 @@ ASSETS: list[dict] = [
     #     label="CGOS16", rate_src="manual", rate=7.4127),
 
     # --------- EXCEÇÕES FIXAS (buscam taxa no site) ------------------------
-    dict(code_xp="21F0189140", tab="CRI",
-         label="CRI Vic Engenharia 1ª Emissão", rate_src="scrape",
-         url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=9081&codativo=CRI%20Vic%20Engenharia%201%C2%AA%20Emiss%C3%A3o"),
+#    dict(code_xp="21F0189140", tab="CRI",
+#         label="CRI Vic Engenharia 1ª Emissão", rate_src="scrape",
+#         url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=9081&codativo=CRI%20Vic%20Engenharia%201%C2%AA%20Emiss%C3%A3o"),
 
     dict(code_xp="21I0605705", tab="CRI",
          label="CRI Bem Brasil", rate_src="scrape",
