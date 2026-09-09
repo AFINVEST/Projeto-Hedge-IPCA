@@ -68,9 +68,9 @@ ASSETS: list[dict] = [
          label="TBCR18", rate_src="scrape",
          url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=3417&codativo=TBCR18"),
 
-    #dict(code_xp="CERT11", tab="DEB",
-    #     label="CERT11", rate_src="scrape",
-    #     url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=3417&codativo=CERT11"),
+    #dict(code_xp="ITPE13", tab="DEB",
+    #     label="ITPE13", rate_src="scrape",
+    #     url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=10833&codativo=ITPE13"),
 
     # --------- ATIVOS CASUAIS (taxa informada manualmente) ----------------- (Manter ordem de DEB, CRI, CRA)
     #dict(code_xp="ENMTB3", tab="DEB",
