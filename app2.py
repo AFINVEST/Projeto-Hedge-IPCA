@@ -35,7 +35,7 @@ def load_carteira_hoje() -> pd.DataFrame:
     """Lê carteira_hoje.parquet e devolve colunas: Data, Fundo, Ativo,
        Estratégia, Quantidade (capitalização certa)."""
     
-    df = pd.read_excel('Dados/Relatório de Posição 2026-06-30.xlsx')
+    df = pd.read_excel('Dados/Relatório de Posição 2026-09-04.xlsx')
 
     if "Valor" not in df.columns:
         df["Valor"] = 0.0
@@ -512,8 +512,7 @@ def obter_lista_ativos_original() -> List[str]:
 def obter_lista_outros_original() -> List[str]:
     return [
         "BRFS31", "CRA Ferroeste 2ª Série", "CRI Bem Brasil", "NTN-B26", "NTN-B28",
-        "NTN-B30", "NTN-B32", "NTN-B50", "CRI Vic Engenharia 1ª Emissão", "TBCR18",
-        "CRTA12", "CERT11", "CRI PERNAMBUCO 35ª (23J1753853)", "CRI Vic Engenharia 2ª Emissão", "VALEB1"
+        "NTN-B30", "NTN-B32", "NTN-B50", "CRI Vic Engenharia 1ª Emissão", "CRTA12", "CERT11", "CRI PERNAMBUCO 35ª (23J1753853)", "CRI Vic Engenharia 2ª Emissão"
     ]
 
 
@@ -2302,6 +2301,13 @@ def add_custom_css():
         /* Altera a cor de texto dos itens de opção (como "ACRC21") */
         div[data-baseweb="select"] div[role="option"] {
             color: black !important;
+        }
+        /* COLE AQUI */
+        section[data-testid="stSidebar"] div[data-testid="stSelectbox"] div[data-baseweb="select"] span,
+        section[data-testid="stSidebar"] div[data-testid="stSelectbox"] div[data-baseweb="select"] div,
+        section[data-testid="stSidebar"] div[data-testid="stSelectbox"] input {
+            color: black !important;
+            -webkit-text-fill-color: black !important;
         }
         </style>
         """,
