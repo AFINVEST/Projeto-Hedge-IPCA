@@ -41,7 +41,7 @@ locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')  # Linux/Mac
 # 1. CONFIGURAÇÃO: basta mexer aqui                                          #
 # --------------------------------------------------------------------------- #
 
-LOGIN_AFINVEST = ("emanuel.cabral@afinvest.com.br", "Afs@2024")
+LOGIN_AFINVEST = ("livia.jacob@afinvest.com.br", "Afinvest@2025")
 LOGIN_XP = ("bruno.veloso@afinvest.com.br", "Afs@2023")
 
 # Cada ativo precisa:
@@ -60,9 +60,9 @@ ASSETS: list[dict] = [
     #     label="BRFS31", rate_src="scrape",
     #     url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=6410&codativo=BRFS31"),
 
-    dict(code_xp="ISAEB8", tab="DEB",
-         label="ISAEB8", rate_src="scrape",
-         url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=9846&codativo=ISAEB8"),
+    dict(code_xp="IPIPA5", tab="DEB",
+         label="IPIPA5", rate_src="scrape",
+         url="https://afinvest.com.br/interno/relatorios/detalhes-de-ativos?id=11372&codativo=IPIPA5"),
 
     dict(code_xp="TBCR18", tab="DEB",
          label="TBCR18", rate_src="scrape",
